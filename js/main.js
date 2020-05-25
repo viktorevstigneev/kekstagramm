@@ -1,31 +1,31 @@
 "use strict";
 
 const PHOTOS_LIST = [
-  "./photos/1.jpg",
-  "./photos/2.jpg",
-  "./photos/3.jpg",
-  "./photos/4.jpg",
-  "./photos/5.jpg",
-  "./photos/6.jpg",
-  "./photos/7.jpg",
-  "./photos/8.jpg",
-  "./photos/9.jpg",
-  "./photos/10.jpg",
-  "./photos/11.jpg",
-  "./photos/12.jpg",
-  "./photos/13.jpg",
-  "./photos/14.jpg",
-  "./photos/15.jpg",
-  "./photos/16.jpg",
-  "./photos/17.jpg",
-  "./photos/18.jpg",
-  "./photos/19.jpg",
-  "./photos/20.jpg",
-  "./photos/21.jpg",
-  "./photos/22.jpg",
-  "./photos/23.jpg",
-  "./photos/24.jpg",
-  "./photos/25.jpg"
+  "photos/1.jpg",
+  "photos/2.jpg",
+  "photos/3.jpg",
+  "photos/4.jpg",
+  "photos/5.jpg",
+  "photos/6.jpg",
+  "photos/7.jpg",
+  "photos/8.jpg",
+  "photos/9.jpg",
+  "photos/10.jpg",
+  "photos/11.jpg",
+  "photos/12.jpg",
+  "photos/13.jpg",
+  "photos/14.jpg",
+  "photos/15.jpg",
+  "photos/16.jpg",
+  "photos/17.jpg",
+  "photos/18.jpg",
+  "photos/19.jpg",
+  "photos/20.jpg",
+  "photos/21.jpg",
+  "photos/22.jpg",
+  "photos/23.jpg",
+  "photos/24.jpg",
+  "photos/25.jpg"
 ];
 
 const COMMENTS_LIST = [
@@ -67,34 +67,41 @@ const NAMES_LIST = [
   "Милана"
 ];
 
-const pictureTemplate = document.querySelector("#picture");
+const MAX_COMMENTS_COUNT = 15;
+const MIN_COMMENTS_COUNT = 0;
+const MAX_LIKES_COUNT = 201;
+const MIN_LIKES_COUNT = 15;
+const PHOTOS_COUNT = 25;
+const MAX_AVATAR_COUNT = 8;
+const MIN_AVATAR_COUNT = 0;
+const MIN_NAME_COUNT = 0;
+const MAX_NAME_COUNT = 24;
+const MIN_MESSAGE_COUNT = 0;
+const MAX_MESSAGE_COUNT = 8;
 const uploadedPhotos = [];
-const postedCommentsList = [];
 
 
-const generateRandomNumber = (min, max) => {
-  return Math.floor( Math.random() * (max - min)) + min;
+const generateRandomNumber = (minValue, maxValue) => {
+  return Math.floor( Math.random() * (maxValue - minValue)) + minValue;
 }
  
-const ganerateRandomName = () =>{
-  //знаю что  здесь (0, 24) должны быть константы
-  return NAMES_LIST[generateRandomNumber(0, 24)]
+const generateRandomName = () => {
+  return NAMES_LIST[generateRandomNumber(MIN_NAME_COUNT, MAX_NAME_COUNT)]
 }
 
-const ganerateRandomMessage = () => {
-  return COMMENTS_LIST[generateRandomNumber(0, 8)]
+const generateRandomMessage = () => {
+  return COMMENTS_LIST[generateRandomNumber(MIN_MESSAGE_COUNT, MAX_MESSAGE_COUNT)]
 }
 
-const commentsAmount = generateRandomNumber(0,12);
+const generateRandomComments = () => {
+    const postedCommentsList = [];
+    const maxCommentsAmount = generateRandomNumber(MIN_COMMENTS_COUNT,MAX_COMMENTS_COUNT);
 
-
-
-const generateRandomComments = () =>{
-    for (let i = 0; i < commentsAmount; i++) {
+    for (let i = 0; i < maxCommentsAmount; i++) {
       postedCommentsList.push({
-        avatar: './img/avatar-' + generateRandomNumber(1, 6) + '.svg',
-        message: ganerateRandomMessage(),
-        name: ganerateRandomName() 
+        avatar: "./img/avatar-" + generateRandomNumber(MIN_AVATAR_COUNT, MAX_AVATAR_COUNT) + ".svg",
+        message: generateRandomMessage(),
+        name: generateRandomName() 
       });
     }
     return postedCommentsList;
@@ -103,11 +110,49 @@ const generateRandomComments = () =>{
 
 
 const generatePhotosArray = () => {
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < PHOTOS_COUNT; i++) {
     uploadedPhotos.push({
       url: `./photos/${i+1}.jpg`,
-      likes: generateRandomNumber(15, 200),
+      likes: generateRandomNumber(MIN_LIKES_COUNT,MAX_LIKES_COUNT),
       comments: generateRandomComments()
     });
   }
 }
+
+const  createDOMElement = (i) => {
+  
+  const pictureTemplate = document.querySelector("#picture");
+  const pictureTemplateClone = pictureTemplate.cloneNode(true);
+  const commentsAmount = pictureTemplateClone.content.querySelector(".picture__comments");
+  const picture = pictureTemplateClone.content.querySelector(".picture__img");
+  const likesAmount = pictureTemplateClone.content.querySelector(".picture__likes");
+
+  likesAmount.textContent = uploadedPhotos[i].likes; 
+  picture.src = uploadedPhotos[i].url;
+  commentsAmount.textContent = uploadedPhotos[i].comments.length; 
+ 
+  return pictureTemplateClone;
+
+}
+
+const insertPhotos = () => {
+
+  const photosBlock = document.querySelector(".pictures");
+  const photosBlockFragment = new DocumentFragment(); 
+
+  for (let i = 0; i < uploadedPhotos.length; i++) {
+    photosBlockFragment.append(createDOMElement(i).content);
+  }
+  
+  photosBlock.append(photosBlockFragment);
+  return  photosBlock;
+
+
+
+}
+
+function ShowPicture() {
+  generatePhotosArray();
+  insertPhotos();
+}
+ShowPicture();

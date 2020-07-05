@@ -1,6 +1,7 @@
 "use strict";
 
-
+const MIN_MESSAGE_COUNT = 0;
+const MIN_NAME_COUNT = 0;
 const MAX_LIKES_COUNT = 201;
 const MIN_LIKES_COUNT = 15;
 const PHOTOS_COUNT = 25;
@@ -9,7 +10,9 @@ const MIN_AVATAR_COUNT = 1;
 const MAX_SHOWN_COMMENTS_COUNT = 5;
 const MIN_COMMENTS_COUNT = 0;
 const MAX_COMMENTS_COUNT = 10;
-
+const PHOTOS_AVATAR_WIDTH = 35;
+const PHOTOS_AVATAR_HEIGHT = 35;
+const PHOTOS_AVATAR_ALTERNATIVE_TEXT = "автатар автора комментария";
 
 const PHOTOS_LIST = [
   "photos/1.jpg",
@@ -88,36 +91,11 @@ const DESCRIPTION_LIST = [
 "новая идея пришла, решил опробовать"
 ];
 
-
 const uploadedPhotos = [];
-
 
 const generateRandomNumberFromRange = (minValue, maxValue) =>{
   return Math.floor( Math.random() * (maxValue - minValue)) + minValue;
 }
-
-//опять наверное с названием будет хуйня(вероятно с кодом тоже)
-const generateRandomData = (source) =>{
-
-  return source[generateRandomNumberFromRange(0,source.length)];
-
-}
-
-//20 раз думал что так не правильно но ты вроде ничего не говорил))
-
-//-----------------------------коменты  удалю после ревью
-
-// const generateRandomName = () =>{
-//   return NAMES_LIST[generateRandomNumberFromRange(MIN_NAME_COUNT, MAX_NAME_COUNT)]
-// }
-
-// const generateRandomMessage = () =>{
-//   return COMMENTS_LIST[generateRandomNumberFromRange(MIN_MESSAGE_COUNT, MAX_MESSAGE_COUNT)]
-// }
-
-// const generateRandomDescription = () =>{
-//   return DESCRIPTION_LIST[generateRandomNumberFromRange(0,DESCRIPTION_LIST.length)]
-// }
 
 const generateRandomComments = () =>{
     const postedCommentsList = [];
@@ -126,47 +104,39 @@ const generateRandomComments = () =>{
     for (let i = 0; i < maxCommentsAmount; i++) {
       postedCommentsList.push({
         avatar: "img/avatar-" + generateRandomNumberFromRange(MIN_AVATAR_COUNT, MAX_AVATAR_COUNT) + ".svg",
-        message: generateRandomData(COMMENTS_LIST),
-        name: generateRandomData(NAMES_LIST) 
+        message: COMMENTS_LIST[generateRandomNumberFromRange(MIN_MESSAGE_COUNT, COMMENTS_LIST.length)],
+        name: NAMES_LIST[generateRandomNumberFromRange(MIN_NAME_COUNT, NAMES_LIST.length)] 
       });
     }
     return postedCommentsList;
 }
  
-
-
-const renderPhotosData = () =>{
-
+const generatePhotosData = () =>{
   for (let i = 0; i < PHOTOS_COUNT; i++) {
-
     uploadedPhotos.push({
       url: `photos/${i+1}.jpg`,
       likes: generateRandomNumberFromRange(MIN_LIKES_COUNT,MAX_LIKES_COUNT),
       comments: generateRandomComments(),
-      description:generateRandomData(DESCRIPTION_LIST)
+      description: DESCRIPTION_LIST[generateRandomNumberFromRange(0,DESCRIPTION_LIST.length)]
     });
-
   }
 }
 
-//знал  что ты скажешь исправить это, (ты скажешь почему не исправил если знал) ,я хз как лучше назвать, ну была не была
 const  createPhoto = (photoNumber) =>{
-  
   const photoTemplate = document.querySelector("#picture").cloneNode(true);
   const commentsAmount = photoTemplate.content.querySelector(".picture__comments");
-  const picture = photoTemplate.content.querySelector(".picture__img");
+  const photo = photoTemplate.content.querySelector(".picture__img");
   const likesAmount = photoTemplate.content.querySelector(".picture__likes");
+  const currentPhoto = uploadedPhotos[photoNumber];
 
-  likesAmount.textContent = uploadedPhotos[photoNumber].likes; 
-  picture.src = uploadedPhotos[photoNumber].url;
-  commentsAmount.textContent = uploadedPhotos[photoNumber].comments.length; 
+  likesAmount.textContent = currentPhoto.likes; 
+  photo.src = currentPhoto.url;
+  commentsAmount.textContent = currentPhoto.comments.length; 
  
   return photoTemplate.content;
-
 }
 
 const renderPhotos = () =>{
-
   const photosContainer = document.querySelector(".pictures");
   const photosContainerFragment =  new DocumentFragment();
 
@@ -175,111 +145,73 @@ const renderPhotos = () =>{
   }
   photosContainer.append(photosContainerFragment);
   return  photosContainer;
-
 }
 
-
-
 const showBigPhoto = (photoNumber) =>{
-
   const bigPhotoElement = document.querySelector(".big-picture");
   bigPhotoElement.classList.remove("hidden");
-
+  
+  const currentPhoto =  uploadedPhotos[photoNumber];// я хз, название же норм вроде
   const bigPhoto = bigPhotoElement.querySelector(".big-picture__img img");
   const bigPhotoLikesAmount =  bigPhotoElement.querySelector(".likes-count");
   const bigPhotoCommentAmount =  bigPhotoElement.querySelector(".comments-count");
   const bigPhotoDesription = bigPhotoElement.querySelector(".social__caption");
 
-  bigPhoto.src = uploadedPhotos[photoNumber].url;
-  bigPhotoCommentAmount.textContent = uploadedPhotos[photoNumber].comments.length;
-  bigPhotoLikesAmount.textContent = uploadedPhotos[photoNumber].likes;
-  bigPhotoDesription.textContent = uploadedPhotos[photoNumber].description;
+  bigPhoto.src = currentPhoto.url;
+  bigPhotoCommentAmount.textContent = currentPhoto.comments.length;
+  bigPhotoLikesAmount.textContent = currentPhoto.likes;
+  bigPhotoDesription.textContent = currentPhoto.description;
 
   renderComments(photoNumber);
-  
 }
 
- 
-
-const createComments = (source, text) =>{
-
+const renderSingleComment = (source, text) =>{
   const comment = document.createElement("li");
   comment.className ="social__comment";
-  const imageAvatar = document.createElement("img");
-  imageAvatar.className ="social__picture";
-  imageAvatar.alt = "автатар автора комментария";
-  imageAvatar.width = 35;
-  imageAvatar.height = 35;
-  imageAvatar.src = source;
+
+  const avatar = document.createElement("img");
+  avatar.className ="social__picture";
+  avatar.alt = PHOTOS_AVATAR_ALTERNATIVE_TEXT;
+  avatar.width = PHOTOS_AVATAR_WIDTH;
+  avatar.height = PHOTOS_AVATAR_HEIGHT;
+  avatar.src = source;
+
   const commentText = document.createElement("p");
   commentText.className = "social__text";
   commentText.textContent = text;
-  comment.append(imageAvatar);
+
+  comment.append(avatar);
   comment.append(commentText);
 
   return comment;
 }
 
 const renderComments = (photoNumber) =>{
-
   const commentsContainer = document.querySelector(".social__comments");
   const commentsContainerFragment =  new DocumentFragment();
-
-  //здесь я думал как сделать лучше, ибо понимал что хуйня какая-то, но не придумал, спасибо
-  const commentsCount = Math.min(uploadedPhotos[photoNumber].comments.length, MAX_SHOWN_COMMENTS_COUNT);
+  const currentPhoto = uploadedPhotos[photoNumber];
+  const commentsCount = Math.min(currentPhoto.comments.length, MAX_SHOWN_COMMENTS_COUNT);
 
   for(let i = 0; i < commentsCount; i++){
-
-    commentsContainerFragment.append(createComments( uploadedPhotos[photoNumber].comments[i].avatar, uploadedPhotos[photoNumber].comments[i].message));
-  
+    commentsContainerFragment.append(renderSingleComment( currentPhoto.comments[i].avatar, currentPhoto.comments[i].message));
   }
+
   commentsContainer.innerHTML="";
   commentsContainer.append(commentsContainerFragment);
-
 }
 
-//ты конечно умеешь объяснить (или дать пиздюлей)) )
-// "Зачем тут присвоение?
-//Что это делает в глобальной области видимости?"
-//хер поймешь что тут исправить нужно, наверное и я и в этот раз сделаю неправильно
-// хз какой из вариантов нужен, но скорее всего тот что ниже закомечен, 
-//потому что я  понял, что в программировании нужно стараться писать код универсальнее
-
-const hideDomElement = () =>{
-  
   document.querySelector(".social__comment-count").classList.add("visually-hidden");
   document.querySelector(".comments-loader").classList.add("visually-hidden");
 
-}
-
-// const hideDomElement = (element) =>{
-
-//   document.querySelector(element).classList.add("visually-hidden");
-//   document.querySelector(element).classList.add("visually-hidden");
-
-// }
-
-// hideDomElement(".social__comment-count");
-// hideDomElement(".comments-loader");
-
-const showPhotos = () =>{ 
-  renderPhotosData();
+  generatePhotosData();
   renderPhotos(1);
+  
+const photoElements = document.querySelectorAll(".picture__img");
 
-}
-
-hideDomElement();
-showPhotos();
-
-
-// const photoElements = document.querySelectorAll(".picture__img");
-
-// for (let photoItem of photoElements) {
-
-//   photoItem.addEventListener('click', () =>{
-//     let i = 0;
-//     showBigPhoto(i);
-//     i++;
-//   });
-
-// } 
+for (let photoItem of photoElements) {
+  photoItem.addEventListener('click', () =>{
+    let i = 0;
+    showBigPhoto(i);
+    i++;
+  });
+} 

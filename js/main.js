@@ -10,9 +10,9 @@ const MIN_AVATAR_COUNT = 1;
 const MAX_SHOWN_COMMENTS_COUNT = 5;
 const MIN_COMMENTS_COUNT = 0;
 const MAX_COMMENTS_COUNT = 10;
-const PHOTOS_AVATAR_WIDTH = 35;
-const PHOTOS_AVATAR_HEIGHT = 35;
-const PHOTOS_AVATAR_ALTERNATIVE_TEXT = "автатар автора комментария";
+const AVATAR_WIDTH = 35;
+const AVATAR_HEIGHT = 35;
+const AVATAR_ALTERNATIVE_TEXT = "автатар автора комментария";
 
 const PHOTOS_LIST = [
   "photos/1.jpg",
@@ -122,96 +122,107 @@ const generatePhotosData = () =>{
   }
 }
 
-const  createPhoto = (photoNumber) =>{
-  const photoTemplate = document.querySelector("#picture").cloneNode(true);
-  const commentsAmount = photoTemplate.content.querySelector(".picture__comments");
-  const photo = photoTemplate.content.querySelector(".picture__img");
-  const likesAmount = photoTemplate.content.querySelector(".picture__likes");
-  const currentPhoto = uploadedPhotos[photoNumber];
-
-  likesAmount.textContent = currentPhoto.likes; 
-  photo.src = currentPhoto.url;
-  commentsAmount.textContent = currentPhoto.comments.length; 
- 
-  return photoTemplate.content;
-}
-
+//чувствую хуйни понаделал((
 const renderPhotos = () =>{
+  const  createPhoto = (photoNumber) =>{
+    const photoTemplate = document.querySelector("#picture").cloneNode(true);
+    const commentsAmount = photoTemplate.content.querySelector(".picture__comments");
+    const photo = photoTemplate.content.querySelector(".picture__img");
+    const likesAmount = photoTemplate.content.querySelector(".picture__likes");
+    const currentPhotoData = uploadedPhotos[photoNumber];
+  
+    likesAmount.textContent = currentPhotoData.likes; 
+    photo.src = currentPhotoData.url;
+    commentsAmount.textContent = currentPhotoData.comments.length; 
+    photo.setAttribute("data-index", photoNumber);// вероятнее всего это неправильно, потому что когда я так делал в ExpenseTracker ты дал мне пиздюлин   
+    
+    return photoTemplate.content;
+  }
+
   const photosContainer = document.querySelector(".pictures");
   const photosContainerFragment =  new DocumentFragment();
 
   for (let i = 0; i < uploadedPhotos.length; i++) {
     photosContainerFragment.append(createPhoto(i));
   }
+  
   photosContainer.append(photosContainerFragment);
   return  photosContainer;
 }
 
-const showBigPhoto = (photoNumber) =>{
+const renderBigPhoto = (photoNumber) =>{
+  const renderComments = (photoNumber) =>{
+    const renderSingleComment = (source, text) =>{
+      const comment = document.createElement("li");
+      comment.className ="social__comment";
+    
+      const avatar = document.createElement("img");
+      avatar.className ="social__picture";
+      avatar.alt = AVATAR_ALTERNATIVE_TEXT;
+      avatar.width = AVATAR_WIDTH;
+      avatar.height = AVATAR_HEIGHT;
+      avatar.src = source;
+    
+      const commentText = document.createElement("p");
+      commentText.className = "social__text";
+      commentText.textContent = text;
+    
+      comment.append(avatar);
+      comment.append(commentText);
+    
+      return comment;
+    }
+
+    const commentsContainer = document.querySelector(".social__comments");
+    const commentsContainerFragment =  new DocumentFragment();
+    const currentPhotoData = uploadedPhotos[photoNumber];
+    const commentsCount = Math.min(currentPhotoData.comments.length, MAX_SHOWN_COMMENTS_COUNT);
+  
+    for(let i = 0; i < commentsCount; i++){
+      commentsContainerFragment.append(renderSingleComment( currentPhotoData.comments[i].avatar, currentPhotoData.comments[i].message));
+    }
+  
+    commentsContainer.innerHTML="";
+    commentsContainer.append(commentsContainerFragment);
+  }
+
   const bigPhotoElement = document.querySelector(".big-picture");
   bigPhotoElement.classList.remove("hidden");
   
-  const currentPhoto =  uploadedPhotos[photoNumber];// я хз, название же норм вроде
+  const currentPhotoData =  uploadedPhotos[photoNumber];
   const bigPhoto = bigPhotoElement.querySelector(".big-picture__img img");
   const bigPhotoLikesAmount =  bigPhotoElement.querySelector(".likes-count");
   const bigPhotoCommentAmount =  bigPhotoElement.querySelector(".comments-count");
   const bigPhotoDesription = bigPhotoElement.querySelector(".social__caption");
 
-  bigPhoto.src = currentPhoto.url;
-  bigPhotoCommentAmount.textContent = currentPhoto.comments.length;
-  bigPhotoLikesAmount.textContent = currentPhoto.likes;
-  bigPhotoDesription.textContent = currentPhoto.description;
+  bigPhoto.src = currentPhotoData.url;
+  bigPhotoCommentAmount.textContent = currentPhotoData.comments.length;
+  bigPhotoLikesAmount.textContent = currentPhotoData.likes;
+  bigPhotoDesription.textContent = currentPhotoData.description;
 
   renderComments(photoNumber);
-}
 
-const renderSingleComment = (source, text) =>{
-  const comment = document.createElement("li");
-  comment.className ="social__comment";
-
-  const avatar = document.createElement("img");
-  avatar.className ="social__picture";
-  avatar.alt = PHOTOS_AVATAR_ALTERNATIVE_TEXT;
-  avatar.width = PHOTOS_AVATAR_WIDTH;
-  avatar.height = PHOTOS_AVATAR_HEIGHT;
-  avatar.src = source;
-
-  const commentText = document.createElement("p");
-  commentText.className = "social__text";
-  commentText.textContent = text;
-
-  comment.append(avatar);
-  comment.append(commentText);
-
-  return comment;
-}
-
-const renderComments = (photoNumber) =>{
-  const commentsContainer = document.querySelector(".social__comments");
-  const commentsContainerFragment =  new DocumentFragment();
-  const currentPhoto = uploadedPhotos[photoNumber];
-  const commentsCount = Math.min(currentPhoto.comments.length, MAX_SHOWN_COMMENTS_COUNT);
-
-  for(let i = 0; i < commentsCount; i++){
-    commentsContainerFragment.append(renderSingleComment( currentPhoto.comments[i].avatar, currentPhoto.comments[i].message));
+  const hideCommentsLoader = () => {
+    document.querySelector(".social__comment-count").classList.add("visually-hidden");
+    document.querySelector(".comments-loader").classList.add("visually-hidden");
   }
 
-  commentsContainer.innerHTML="";
-  commentsContainer.append(commentsContainerFragment);
+  hideCommentsLoader();
 }
 
-  document.querySelector(".social__comment-count").classList.add("visually-hidden");
-  document.querySelector(".comments-loader").classList.add("visually-hidden");
-
+ 
   generatePhotosData();
-  renderPhotos(1);
+  renderPhotos();
   
-const photoElements = document.querySelectorAll(".picture__img");
+  
+  const photos = document.querySelectorAll(".picture__img");//наверное это нельзя оставлять в глобальной области видимости
+  
+  const handlePhotoClick = (evt) => {
+    renderBigPhoto(evt.target.getAttribute("data-index"));
+  }
 
-for (let photoItem of photoElements) {
-  photoItem.addEventListener('click', () =>{
-    let i = 0;
-    showBigPhoto(i);
-    i++;
+  photos.forEach((photo) => {
+    photo.addEventListener("click", handlePhotoClick);
   });
-} 
+
+

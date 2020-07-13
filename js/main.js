@@ -82,13 +82,13 @@ const NAMES_LIST = [
 ];
 
 const DESCRIPTION_LIST = [
-"купил новый обьектив", 
-"сломалась кнопка на фотоаппарате, сам фоткает",
-"младший брат взял побаловаться",
-"уронил фотик",
-"поехал в америку",
-"девушка прислала фотографию из отпуска",
-"новая идея пришла, решил опробовать"
+  "купил новый обьектив", 
+  "сломалась кнопка на фотоаппарате, сам фоткает",
+  "младший брат взял побаловаться",
+  "уронил фотик",
+  "поехал в америку",
+  "девушка прислала фотографию из отпуска",
+  "новая идея пришла, решил опробовать"
 ];
 
 const uploadedPhotos = [];
@@ -122,10 +122,13 @@ const generatePhotosData = () =>{
   }
 }
 
-//чувствую хуйни понаделал((
 const renderPhotos = () =>{
-  const  createPhoto = (photoNumber) =>{
-    const photoTemplate = document.querySelector("#picture").cloneNode(true);
+  const photosContainer = document.querySelector(".pictures");
+  const photosContainerFragment =  new DocumentFragment();
+
+  const createPhoto = (photoNumber) =>{
+    //сори что не сделал это,не могу уже,может ты подскажешь почему
+    const photoTemplate = document.querySelector("#picture").cloneNode(true);// выносил я эту строку 25 раз минимум , оно перестает рабоать,я не смог решиить это ,может просто уже дохера сижу ,но вообще нет,я долго думал над решением,вообще не понимаю в чем может быть проблема,так пару мысле было но хз
     const commentsAmount = photoTemplate.content.querySelector(".picture__comments");
     const photo = photoTemplate.content.querySelector(".picture__img");
     const likesAmount = photoTemplate.content.querySelector(".picture__likes");
@@ -134,95 +137,105 @@ const renderPhotos = () =>{
     likesAmount.textContent = currentPhotoData.likes; 
     photo.src = currentPhotoData.url;
     commentsAmount.textContent = currentPhotoData.comments.length; 
-    photo.setAttribute("data-index", photoNumber);// вероятнее всего это неправильно, потому что когда я так делал в ExpenseTracker ты дал мне пиздюлин   
-    
+    photo.setAttribute("data-index", photoNumber);  
+  
     return photoTemplate.content;
   }
 
-  const photosContainer = document.querySelector(".pictures");
-  const photosContainerFragment =  new DocumentFragment();
-
-  for (let i = 0; i < uploadedPhotos.length; i++) {
+  for (let i = 0; i < uploadedPhotos.length; i++) {//ты мне как-то говорил раньше что нужно использовать декларативное прогрммирование,что таким циклом делать плохо,что нужно стараться пользоваться форичем и прочими штуками,а тут ты почему ничего не говоришь?
     photosContainerFragment.append(createPhoto(i));
   }
   
   photosContainer.append(photosContainerFragment);
+
+  //если эти обьявления функций перенести выше,чтобы не разрывать обьявления функций оно работать не будет
+  const photos = document.querySelectorAll(".picture");//даже если эту строку вынести наверх оно перестанет работать,в принципе я даже понимаю почему
+
+  const handlePhotoClick = (evt) => {
+    renderBigPhoto(evt.target.getAttribute("data-index"));
+  }
+
+  const handlePhotoKeyDown = (evt) => {
+    if (evt.code === "Enter") {
+      evt.preventDefault();
+      renderBigPhoto(evt.target.querySelector(".picture__img").getAttribute("data-index"));
+    }
+  }
+  
+  photos.forEach((photo) => {
+    photo.addEventListener("click", handlePhotoClick);
+    photo.addEventListener("keydown", handlePhotoKeyDown);
+  });
+  
+
   return  photosContainer;
 }
 
 const renderBigPhoto = (photoNumber) =>{
-  const renderComments = (photoNumber) =>{
-    const renderSingleComment = (source, text) =>{
-      const comment = document.createElement("li");
-      comment.className ="social__comment";
-    
-      const avatar = document.createElement("img");
-      avatar.className ="social__picture";
-      avatar.alt = AVATAR_ALTERNATIVE_TEXT;
-      avatar.width = AVATAR_WIDTH;
-      avatar.height = AVATAR_HEIGHT;
-      avatar.src = source;
-    
-      const commentText = document.createElement("p");
-      commentText.className = "social__text";
-      commentText.textContent = text;
-    
-      comment.append(avatar);
-      comment.append(commentText);
-    
-      return comment;
-    }
-
-    const commentsContainer = document.querySelector(".social__comments");
-    const commentsContainerFragment =  new DocumentFragment();
-    const currentPhotoData = uploadedPhotos[photoNumber];
-    const commentsCount = Math.min(currentPhotoData.comments.length, MAX_SHOWN_COMMENTS_COUNT);
-  
-    for(let i = 0; i < commentsCount; i++){
-      commentsContainerFragment.append(renderSingleComment( currentPhotoData.comments[i].avatar, currentPhotoData.comments[i].message));
-    }
-  
-    commentsContainer.innerHTML="";
-    commentsContainer.append(commentsContainerFragment);
-  }
-
-  const bigPhotoElement = document.querySelector(".big-picture");
-  bigPhotoElement.classList.remove("hidden");
-  
+  const bigPhotoWrapper = document.querySelector(".big-picture");
+  const bigPhoto = bigPhotoWrapper.querySelector(".big-picture__img img");
+  const bigPhotoLikesAmount =  bigPhotoWrapper.querySelector(".likes-count");
+  const bigPhotoCommentAmount =  bigPhotoWrapper.querySelector(".comments-count");
+  const bigPhotoDesription = bigPhotoWrapper.querySelector(".social__caption");
   const currentPhotoData =  uploadedPhotos[photoNumber];
-  const bigPhoto = bigPhotoElement.querySelector(".big-picture__img img");
-  const bigPhotoLikesAmount =  bigPhotoElement.querySelector(".likes-count");
-  const bigPhotoCommentAmount =  bigPhotoElement.querySelector(".comments-count");
-  const bigPhotoDesription = bigPhotoElement.querySelector(".social__caption");
 
   bigPhoto.src = currentPhotoData.url;
   bigPhotoCommentAmount.textContent = currentPhotoData.comments.length;
   bigPhotoLikesAmount.textContent = currentPhotoData.likes;
   bigPhotoDesription.textContent = currentPhotoData.description;
+  bigPhotoWrapper.classList.remove("hidden");
 
-  renderComments(photoNumber);
+  const renderComments = (photoNumber) =>{
 
-  const hideCommentsLoader = () => {
-    document.querySelector(".social__comment-count").classList.add("visually-hidden");
-    document.querySelector(".comments-loader").classList.add("visually-hidden");
+    const commentsContainer = bigPhotoWrapper.querySelector(".social__comments");
+    const commentsContainerFragment =  new DocumentFragment();
+    const commentsCount = Math.min(currentPhotoData.comments.length, MAX_SHOWN_COMMENTS_COUNT);
+  
+    const renderSingleComment = (source, text) =>{
+      const comment = document.createElement("li");
+      comment.className ="social__comment";
+    
+      const createAvatar = () =>{
+        const avatar = document.createElement("img");
+        avatar.className ="social__picture";
+        avatar.alt = AVATAR_ALTERNATIVE_TEXT;
+        avatar.width = AVATAR_WIDTH;
+        avatar.height = AVATAR_HEIGHT;
+        avatar.src = source;
+        
+        return avatar;
+      }
+    
+      const createCommentText = () =>{
+        const commentText = document.createElement("p");
+        commentText.className = "social__text";
+        commentText.textContent = text;
+
+        return commentText;
+      }
+
+      comment.append(createAvatar(),createCommentText());
+  
+      return comment;
+    }
+
+    for(let i = 0; i < commentsCount; i++){
+      commentsContainerFragment.append(renderSingleComment( currentPhotoData.comments[i].avatar, currentPhotoData.comments[i].message));
+    }
+
+    commentsContainer.innerHTML = "";
+    commentsContainer.append(commentsContainerFragment);
   }
 
+  const hideCommentsLoader = () => {
+    bigPhotoWrapper.querySelector(".social__comment-count").classList.add("visually-hidden");
+    bigPhotoWrapper.querySelector(".comments-loader").classList.add("visually-hidden");
+  }
+
+  renderComments(photoNumber);
   hideCommentsLoader();
 }
 
- 
-  generatePhotosData();
-  renderPhotos();
+generatePhotosData();
+renderPhotos();
   
-  
-  const photos = document.querySelectorAll(".picture__img");//наверное это нельзя оставлять в глобальной области видимости
-  
-  const handlePhotoClick = (evt) => {
-    renderBigPhoto(evt.target.getAttribute("data-index"));
-  }
-
-  photos.forEach((photo) => {
-    photo.addEventListener("click", handlePhotoClick);
-  });
-
-

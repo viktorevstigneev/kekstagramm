@@ -49,9 +49,9 @@ const COMMENTS_LIST = [
   "Моя бабушка случайно чихнула с фотоаппаратом в руках и у неё получилась фотография лучше.",
   "Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.",
   "Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!",
-  "Моя кошка фоткает лучше",
-  "Зачетное фото",
-  "Хорошую камеру плохими руками не испортишь"
+  "Моя кошка фоткает лучше.",
+  "Зачетное фото.",
+  "Хорошую камеру плохими руками не испортишь."
 ];
 
 const NAMES_LIST = [
@@ -82,13 +82,13 @@ const NAMES_LIST = [
 ];
 
 const DESCRIPTION_LIST = [
-  "купил новый обьектив", 
-  "сломалась кнопка на фотоаппарате, сам фоткает",
-  "младший брат взял побаловаться",
-  "уронил фотик",
-  "поехал в америку",
-  "девушка прислала фотографию из отпуска",
-  "новая идея пришла, решил опробовать"
+  "Купил новый обьектив.", 
+  "Сломалась кнопка на фотоаппарате, сам фоткает.",
+  "Младший брат взял побаловаться.",
+  "Уронил фотик.",
+  "Поехал в америку.",
+  "Девушка прислала фотографию из отпуска.",
+  "Новая идея пришла, решил опробовать."
 ];
 
 const uploadedPhotos = [];
@@ -125,40 +125,41 @@ const generatePhotosData = () =>{
 const renderPhotos = () =>{
   const photosContainer = document.querySelector(".pictures");
   const photosContainerFragment =  new DocumentFragment();
+  const photoTemplate = document.querySelector("#picture").content.querySelector(".picture");
 
-  const createPhoto = (photoNumber) =>{
-    //сори что не сделал это,не могу уже,может ты подскажешь почему
-    const photoTemplate = document.querySelector("#picture").cloneNode(true);// выносил я эту строку 25 раз минимум , оно перестает рабоать,я не смог решиить это ,может просто уже дохера сижу ,но вообще нет,я долго думал над решением,вообще не понимаю в чем может быть проблема,так пару мысле было но хз
-    const commentsAmount = photoTemplate.content.querySelector(".picture__comments");
-    const photo = photoTemplate.content.querySelector(".picture__img");
-    const likesAmount = photoTemplate.content.querySelector(".picture__likes");
-    const currentPhotoData = uploadedPhotos[photoNumber];
-  
-    likesAmount.textContent = currentPhotoData.likes; 
-    photo.src = currentPhotoData.url;
-    commentsAmount.textContent = currentPhotoData.comments.length; 
+  //короче, типо первый параметр в фориче идет как сам элемент,а не индекс,а моя функция по индексу работает, я не знаю другого варианта и решил добавить еще один параметр,похер если не правильно перепишу,ты говорил не бояться резать свой код,поэтому я сделал так
+  const createPhoto = (image, photoNumber) =>{
+    const photoTemplateClone = photoTemplate.cloneNode(true);
+    const photo = photoTemplateClone.querySelector(".picture__img");//название мне тоже не нравиться
+    const photoCommentsAmount = photoTemplateClone.querySelector(".picture__comments");
+    const photoLikesAmount = photoTemplateClone.querySelector(".picture__likes");
+
+    photo.src = image.url;
+    photoCommentsAmount.textContent = image.comments.length;
+    photoLikesAmount.textContent = image.likes;
     photo.setAttribute("data-index", photoNumber);  
-  
-    return photoTemplate.content;
+
+    return photoTemplateClone;
   }
 
-  for (let i = 0; i < uploadedPhotos.length; i++) {//ты мне как-то говорил раньше что нужно использовать декларативное прогрммирование,что таким циклом делать плохо,что нужно стараться пользоваться форичем и прочими штуками,а тут ты почему ничего не говоришь?
-    photosContainerFragment.append(createPhoto(i));
-  }
+  //заебался я делать эту фунцкию,боже хоть бы это был нормальный вариант, АМИНЬ....
+
+  uploadedPhotos.forEach((image, photoNumber)=>{
+    photosContainerFragment.append(createPhoto(image, photoNumber));
+  });
   
   photosContainer.append(photosContainerFragment);
 
-  //если эти обьявления функций перенести выше,чтобы не разрывать обьявления функций оно работать не будет
-  const photos = document.querySelectorAll(".picture");//даже если эту строку вынести наверх оно перестанет работать,в принципе я даже понимаю почему
+  const photos = document.querySelectorAll(".picture");
 
   const handlePhotoClick = (evt) => {
-    renderBigPhoto(evt.target.getAttribute("data-index"));
+    renderBigPhoto(evt.target.dataset.index);
   }
 
   const handlePhotoKeyDown = (evt) => {
     if (evt.code === "Enter") {
       evt.preventDefault();
-      renderBigPhoto(evt.target.querySelector(".picture__img").getAttribute("data-index"));
+      renderBigPhoto(evt.target.querySelector(".picture__img").dataset.index);
     }
   }
   
@@ -167,7 +168,6 @@ const renderPhotos = () =>{
     photo.addEventListener("keydown", handlePhotoKeyDown);
   });
   
-
   return  photosContainer;
 }
 
@@ -185,13 +185,12 @@ const renderBigPhoto = (photoNumber) =>{
   bigPhotoDesription.textContent = currentPhotoData.description;
   bigPhotoWrapper.classList.remove("hidden");
 
-  const renderComments = (photoNumber) =>{
-
+  const renderComments = () =>{
     const commentsContainer = bigPhotoWrapper.querySelector(".social__comments");
     const commentsContainerFragment =  new DocumentFragment();
     const commentsCount = Math.min(currentPhotoData.comments.length, MAX_SHOWN_COMMENTS_COUNT);
   
-    const renderSingleComment = (source, text) =>{
+    const renderSingleComment = (commentObject) =>{
       const comment = document.createElement("li");
       comment.className ="social__comment";
     
@@ -201,7 +200,7 @@ const renderBigPhoto = (photoNumber) =>{
         avatar.alt = AVATAR_ALTERNATIVE_TEXT;
         avatar.width = AVATAR_WIDTH;
         avatar.height = AVATAR_HEIGHT;
-        avatar.src = source;
+        avatar.src = commentObject.avatar;
         
         return avatar;
       }
@@ -209,7 +208,7 @@ const renderBigPhoto = (photoNumber) =>{
       const createCommentText = () =>{
         const commentText = document.createElement("p");
         commentText.className = "social__text";
-        commentText.textContent = text;
+        commentText.textContent = commentObject.message;
 
         return commentText;
       }
@@ -220,7 +219,7 @@ const renderBigPhoto = (photoNumber) =>{
     }
 
     for(let i = 0; i < commentsCount; i++){
-      commentsContainerFragment.append(renderSingleComment( currentPhotoData.comments[i].avatar, currentPhotoData.comments[i].message));
+      commentsContainerFragment.append(renderSingleComment(currentPhotoData.comments[i]));
     }
 
     commentsContainer.innerHTML = "";

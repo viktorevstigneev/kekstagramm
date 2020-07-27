@@ -145,8 +145,6 @@ const renderBigPhoto = (currentPhotoData) =>{
   const bigPhotoCommentAmount =  bigPhotoWrapper.querySelector(".comments-count");
   const bigPhotoDesription = bigPhotoWrapper.querySelector(".social__caption");
   
-  
-
   bigPhoto.src = currentPhotoData.url;
   bigPhotoCommentAmount.textContent = currentPhotoData.comments.length;
   bigPhotoLikesAmount.textContent = currentPhotoData.likes;

@@ -12,35 +12,7 @@ const MIN_COMMENTS_COUNT = 0;
 const MAX_COMMENTS_COUNT = 10;
 const AVATAR_WIDTH = 35;
 const AVATAR_HEIGHT = 35;
-const AVATAR_ALTERNATIVE_TEXT = "автатар автора комментария";
-
-const PHOTOS_LIST = [
-  "photos/1.jpg",
-  "photos/2.jpg",
-  "photos/3.jpg",
-  "photos/4.jpg",
-  "photos/5.jpg",
-  "photos/6.jpg",
-  "photos/7.jpg",
-  "photos/8.jpg",
-  "photos/9.jpg",
-  "photos/10.jpg",
-  "photos/11.jpg",
-  "photos/12.jpg",
-  "photos/13.jpg",
-  "photos/14.jpg",
-  "photos/15.jpg",
-  "photos/16.jpg",
-  "photos/17.jpg",
-  "photos/18.jpg",
-  "photos/19.jpg",
-  "photos/20.jpg",
-  "photos/21.jpg",
-  "photos/22.jpg",
-  "photos/23.jpg",
-  "photos/24.jpg",
-  "photos/25.jpg"
-];
+const AVATAR_ALTERNATIVE_TEXT = "Аватар автора комментария";
 
 const COMMENTS_LIST = [
   "Всё отлично!",
@@ -127,10 +99,9 @@ const renderPhotos = () =>{
   const photosContainerFragment =  new DocumentFragment();
   const photoTemplate = document.querySelector("#picture").content.querySelector(".picture");
 
-  //короче, типо первый параметр в фориче идет как сам элемент,а не индекс,а моя функция по индексу работает, я не знаю другого варианта и решил добавить еще один параметр,похер если не правильно перепишу,ты говорил не бояться резать свой код,поэтому я сделал так
   const createPhoto = (image, photoNumber) =>{
     const photoTemplateClone = photoTemplate.cloneNode(true);
-    const photo = photoTemplateClone.querySelector(".picture__img");//название мне тоже не нравиться
+    const photo = photoTemplateClone.querySelector(".picture__img");
     const photoCommentsAmount = photoTemplateClone.querySelector(".picture__comments");
     const photoLikesAmount = photoTemplateClone.querySelector(".picture__likes");
 
@@ -142,84 +113,81 @@ const renderPhotos = () =>{
     return photoTemplateClone;
   }
 
-  //заебался я делать эту фунцкию,боже хоть бы это был нормальный вариант, АМИНЬ....
-
   uploadedPhotos.forEach((image, photoNumber)=>{
     photosContainerFragment.append(createPhoto(image, photoNumber));
   });
   
   photosContainer.append(photosContainerFragment);
 
-  const photos = document.querySelectorAll(".picture");
-
   const handlePhotoClick = (evt) => {
-    renderBigPhoto(evt.target.dataset.index);
+    renderBigPhoto(uploadedPhotos[evt.target.dataset.index]);
   }
 
   const handlePhotoKeyDown = (evt) => {
     if (evt.code === "Enter") {
       evt.preventDefault();
-      renderBigPhoto(evt.target.querySelector(".picture__img").dataset.index);
+      renderBigPhoto(uploadedPhotos[evt.target.querySelector(".picture__img").dataset.index]);
     }
   }
   
-  photos.forEach((photo) => {
+  photosContainer.querySelectorAll(".picture").forEach((photo) => {
     photo.addEventListener("click", handlePhotoClick);
     photo.addEventListener("keydown", handlePhotoKeyDown);
   });
-  
+
   return  photosContainer;
 }
 
-const renderBigPhoto = (photoNumber) =>{
+const renderBigPhoto = (currentPhotoData) =>{
   const bigPhotoWrapper = document.querySelector(".big-picture");
   const bigPhoto = bigPhotoWrapper.querySelector(".big-picture__img img");
   const bigPhotoLikesAmount =  bigPhotoWrapper.querySelector(".likes-count");
   const bigPhotoCommentAmount =  bigPhotoWrapper.querySelector(".comments-count");
   const bigPhotoDesription = bigPhotoWrapper.querySelector(".social__caption");
-  const currentPhotoData =  uploadedPhotos[photoNumber];
+  
+  
 
   bigPhoto.src = currentPhotoData.url;
   bigPhotoCommentAmount.textContent = currentPhotoData.comments.length;
   bigPhotoLikesAmount.textContent = currentPhotoData.likes;
   bigPhotoDesription.textContent = currentPhotoData.description;
   bigPhotoWrapper.classList.remove("hidden");
+  document.body.classList.add("modal-open");
 
   const renderComments = () =>{
     const commentsContainer = bigPhotoWrapper.querySelector(".social__comments");
     const commentsContainerFragment =  new DocumentFragment();
     const commentsCount = Math.min(currentPhotoData.comments.length, MAX_SHOWN_COMMENTS_COUNT);
   
-    const renderSingleComment = (commentObject) =>{
+    const createAvatar = (commentObject) =>{
+      const avatar = document.createElement("img");
+      avatar.className ="social__picture";
+      avatar.alt = AVATAR_ALTERNATIVE_TEXT;
+      avatar.width = AVATAR_WIDTH;
+      avatar.height = AVATAR_HEIGHT;
+      avatar.src = commentObject.avatar;
+      
+      return avatar;
+    }
+
+    const createCommentText = (commentObject) =>{
+      const commentText = document.createElement("p");
+      commentText.className = "social__text";
+      commentText.textContent = commentObject.message;
+
+      return commentText;
+    }
+
+    const renderSingleComment = (commentNumber) =>{
       const comment = document.createElement("li");
       comment.className ="social__comment";
-    
-      const createAvatar = () =>{
-        const avatar = document.createElement("img");
-        avatar.className ="social__picture";
-        avatar.alt = AVATAR_ALTERNATIVE_TEXT;
-        avatar.width = AVATAR_WIDTH;
-        avatar.height = AVATAR_HEIGHT;
-        avatar.src = commentObject.avatar;
-        
-        return avatar;
-      }
-    
-      const createCommentText = () =>{
-        const commentText = document.createElement("p");
-        commentText.className = "social__text";
-        commentText.textContent = commentObject.message;
-
-        return commentText;
-      }
-
-      comment.append(createAvatar(),createCommentText());
+      comment.append(createAvatar(currentPhotoData.comments[commentNumber]),createCommentText(currentPhotoData.comments[commentNumber]));
   
       return comment;
     }
 
     for(let i = 0; i < commentsCount; i++){
-      commentsContainerFragment.append(renderSingleComment(currentPhotoData.comments[i]));
+      commentsContainerFragment.append(renderSingleComment(i));
     }
 
     commentsContainer.innerHTML = "";
@@ -231,7 +199,7 @@ const renderBigPhoto = (photoNumber) =>{
     bigPhotoWrapper.querySelector(".comments-loader").classList.add("visually-hidden");
   }
 
-  renderComments(photoNumber);
+  renderComments();
   hideCommentsLoader();
 }
 

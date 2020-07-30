@@ -13,6 +13,7 @@ const MAX_COMMENTS_COUNT = 10;
 const AVATAR_WIDTH = 35;
 const AVATAR_HEIGHT = 35;
 const AVATAR_ALTERNATIVE_TEXT = "Аватар автора комментария";
+const ENTER = "Enter";
 
 const COMMENTS_LIST = [
   "Всё отлично!",
@@ -69,21 +70,24 @@ const generateRandomNumberFromRange = (minValue, maxValue) =>{
   return Math.floor( Math.random() * (maxValue - minValue)) + minValue;
 }
 
-const generateRandomComments = () =>{
-    const postedCommentsList = [];
+
+ 
+const generatePhotosData = () =>{
+  const generateRandomComments = () =>{
+    const commentst = [];
     const maxCommentsAmount = generateRandomNumberFromRange(MIN_COMMENTS_COUNT,MAX_COMMENTS_COUNT);
 
     for (let i = 0; i < maxCommentsAmount; i++) {
-      postedCommentsList.push({
+      commentst.push({
         avatar: "img/avatar-" + generateRandomNumberFromRange(MIN_AVATAR_COUNT, MAX_AVATAR_COUNT) + ".svg",
         message: COMMENTS_LIST[generateRandomNumberFromRange(MIN_MESSAGE_COUNT, COMMENTS_LIST.length)],
         name: NAMES_LIST[generateRandomNumberFromRange(MIN_NAME_COUNT, NAMES_LIST.length)] 
       });
     }
-    return postedCommentsList;
-}
- 
-const generatePhotosData = () =>{
+    
+    return commentst;
+  }
+
   for (let i = 0; i < PHOTOS_COUNT; i++) {
     uploadedPhotos.push({
       url: `photos/${i+1}.jpg`,
@@ -113,24 +117,24 @@ const renderPhotos = () =>{
     return photoTemplateClone;
   }
 
-  uploadedPhotos.forEach((image, photoNumber)=>{
+  uploadedPhotos.forEach((image, photoNumber) =>{
     photosContainerFragment.append(createPhoto(image, photoNumber));
   });
   
   photosContainer.append(photosContainerFragment);
 
-  const handlePhotoClick = (evt) => {
+  const handlePhotoClick = (evt) =>{
     renderBigPhoto(uploadedPhotos[evt.target.dataset.index]);
   }
 
-  const handlePhotoKeyDown = (evt) => {
-    if (evt.code === "Enter") {
+  const handlePhotoKeyDown = (evt) =>{
+    if (evt.code === ENTER) {
       evt.preventDefault();
       renderBigPhoto(uploadedPhotos[evt.target.querySelector(".picture__img").dataset.index]);
     }
   }
   
-  photosContainer.querySelectorAll(".picture").forEach((photo) => {
+  photosContainer.querySelectorAll(".picture").forEach((photo) =>{
     photo.addEventListener("click", handlePhotoClick);
     photo.addEventListener("keydown", handlePhotoKeyDown);
   });
@@ -157,29 +161,30 @@ const renderBigPhoto = (currentPhotoData) =>{
     const commentsContainerFragment =  new DocumentFragment();
     const commentsCount = Math.min(currentPhotoData.comments.length, MAX_SHOWN_COMMENTS_COUNT);
   
-    const createAvatar = (commentObject) =>{
+    const createAvatar = (commentAvatar) =>{
       const avatar = document.createElement("img");
       avatar.className ="social__picture";
       avatar.alt = AVATAR_ALTERNATIVE_TEXT;
       avatar.width = AVATAR_WIDTH;
       avatar.height = AVATAR_HEIGHT;
-      avatar.src = commentObject.avatar;
+      avatar.src = commentAvatar;
       
       return avatar;
     }
 
-    const createCommentText = (commentObject) =>{
+    const createCommentText = (commentMessage) =>{
       const commentText = document.createElement("p");
       commentText.className = "social__text";
-      commentText.textContent = commentObject.message;
+      commentText.textContent = commentMessage;
 
       return commentText;
     }
 
     const renderSingleComment = (commentNumber) =>{
+      const currentComment = currentPhotoData.comments[commentNumber]
       const comment = document.createElement("li");
       comment.className ="social__comment";
-      comment.append(createAvatar(currentPhotoData.comments[commentNumber]),createCommentText(currentPhotoData.comments[commentNumber]));
+      comment.append(createAvatar(currentComment.avatar),createCommentText(currentComment.message));
   
       return comment;
     }

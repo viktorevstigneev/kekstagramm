@@ -70,22 +70,20 @@ const generateRandomNumberFromRange = (minValue, maxValue) =>{
   return Math.floor( Math.random() * (maxValue - minValue)) + minValue;
 }
 
-
- 
 const generatePhotosData = () =>{
   const generateRandomComments = () =>{
-    const commentst = [];
+    const comments = [];
     const maxCommentsAmount = generateRandomNumberFromRange(MIN_COMMENTS_COUNT,MAX_COMMENTS_COUNT);
 
     for (let i = 0; i < maxCommentsAmount; i++) {
-      commentst.push({
+      comments.push({
         avatar: "img/avatar-" + generateRandomNumberFromRange(MIN_AVATAR_COUNT, MAX_AVATAR_COUNT) + ".svg",
         message: COMMENTS_LIST[generateRandomNumberFromRange(MIN_MESSAGE_COUNT, COMMENTS_LIST.length)],
         name: NAMES_LIST[generateRandomNumberFromRange(MIN_NAME_COUNT, NAMES_LIST.length)] 
       });
     }
     
-    return commentst;
+    return comments;
   }
 
   for (let i = 0; i < PHOTOS_COUNT; i++) {
@@ -100,7 +98,7 @@ const generatePhotosData = () =>{
 
 const renderPhotos = () =>{
   const photosContainer = document.querySelector(".pictures");
-  const photosContainerFragment =  new DocumentFragment();
+  const photosContainerFragment = new DocumentFragment();
   const photoTemplate = document.querySelector("#picture").content.querySelector(".picture");
 
   const createPhoto = (image, photoNumber) =>{
@@ -158,7 +156,7 @@ const renderBigPhoto = (currentPhotoData) =>{
 
   const renderComments = () =>{
     const commentsContainer = bigPhotoWrapper.querySelector(".social__comments");
-    const commentsContainerFragment =  new DocumentFragment();
+    const commentsContainerFragment = new DocumentFragment();
     const commentsCount = Math.min(currentPhotoData.comments.length, MAX_SHOWN_COMMENTS_COUNT);
   
     const createAvatar = (commentAvatar) =>{
@@ -184,12 +182,12 @@ const renderBigPhoto = (currentPhotoData) =>{
       const currentComment = currentPhotoData.comments[commentNumber]
       const comment = document.createElement("li");
       comment.className ="social__comment";
-      comment.append(createAvatar(currentComment.avatar),createCommentText(currentComment.message));
+      comment.append(createAvatar(currentComment.avatar), createCommentText(currentComment.message));
   
       return comment;
     }
 
-    for(let i = 0; i < commentsCount; i++){
+    for (let i = 0; i < commentsCount; i++){
       commentsContainerFragment.append(renderSingleComment(i));
     }
 

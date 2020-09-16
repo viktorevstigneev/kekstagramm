@@ -14,6 +14,7 @@ const AVATAR_WIDTH = 35;
 const AVATAR_HEIGHT = 35;
 const AVATAR_ALTERNATIVE_TEXT = "Аватар автора комментария";
 const ENTER = "Enter";
+const ESCAPE = "Escape";
 
 const COMMENTS_LIST = [
   "Всё отлично!",
@@ -63,6 +64,15 @@ const DESCRIPTION_LIST = [
   "Девушка прислала фотографию из отпуска.",
   "Новая идея пришла, решил опробовать."
 ];
+
+const EFFECT_LIST = {
+  none: "none",
+  chrome: "grayscale",
+  sepia: "sepia",
+  marvin: "invert",
+  phobos: "blur",
+  heat: "brightness"
+};
 
 const uploadedPhotos = [];
 
@@ -195,7 +205,7 @@ const renderBigPhoto = (currentPhotoData) =>{
     commentsContainer.append(commentsContainerFragment);
   }
 
-  const hideCommentsLoader = () => {
+  const hideCommentsLoader = () =>{
     bigPhotoWrapper.querySelector(".social__comment-count").classList.add("visually-hidden");
     bigPhotoWrapper.querySelector(".comments-loader").classList.add("visually-hidden");
   }
@@ -206,4 +216,100 @@ const renderBigPhoto = (currentPhotoData) =>{
 
 generatePhotosData();
 renderPhotos();
+
+const renderEditorForm = () =>{
+  const uploadPhotoOverlay = document.querySelector(".img-upload__overlay");
+  const uploadPhotoInput = document.querySelector(".img-upload__input");
+  const editorCloseButton = uploadPhotoOverlay.querySelector(".img-upload__cancel");
+  const slider = uploadPhotoOverlay.querySelector(".img-upload__effect-level");
+  const sliderPin = slider.querySelector(".effect-level__pin");
+  const sliderDepth = slider.querySelector(".effect-level__depth");
+  const sliderValue = slider.querySelector(".effect-level__value");
+  const photoEffectsList = document.querySelectorAll(".effects__radio");
+  const previewPhoto = document.querySelector(".img-upload__preview img");
+ 
+  const handleUploadPhotoChange = () =>{
+    uploadPhotoOverlay.classList.remove("hidden");
+  }
+
+  const handleEditorCloseButtonClick = () =>{
+    uploadPhotoOverlay.classList.add("hidden");
+  }
+
+  const handleEditorCloseButtonKeyDown = (evt) =>{
+    if (evt.code === ESCAPE) {
+      evt.preventDefault();
+      uploadPhotoOverlay.classList.add("hidden");
+    }
+  }
+
+  const setSliderValue = (value) =>{
+    sliderPin .style.left = `${value}%`;
+    sliderDepth.style.width = `${value}%`;
+    sliderValue.setAttribute("value",value);
+  }
+
+  // работа со слайдером
+  const handleSliderPinMouseDown = (evt) =>{
+    evt.preventDefault();
+
+    var startX = evt.clientX;
+    var effectLineWidth = document.querySelector('.effect-level__line').clientWidth;
+
+    
+    const handleSliderPinMouseMove = (moveEvt) =>{
+      evt.preventDefault();
+      
+      var shiftX = startX - moveEvt.clientX;
+      var pinPositionInPercent = ((sliderPin.offsetLeft - shiftX) / effectLineWidth) * 100;
+   
+      startX = moveEvt.clientX;
+
+      if (pinPositionInPercent > 100) {
+        pinPositionInPercent = 100;
+      } 
+       if (pinPositionInPercent < 0) {
+        pinPositionInPercent = 0;
+      }
+
+      setSliderValue(pinPositionInPercent);
+      previewPhoto.style.filter = `${EFFECT_LIST[previewPhoto.className]}(${sliderValue.value}%)`;
+      
+    }
+
+    const handleSliderPinMouseUp = () =>{
+      document.removeEventListener('mouseup', handleSliderPinMouseUp);
+      document.removeEventListener('mousemove', handleSliderPinMouseMove);
+    }
+
+    document.addEventListener('mousemove', handleSliderPinMouseMove);
+    document.addEventListener('mouseup', handleSliderPinMouseUp);
+  }
+
+  uploadPhotoInput.addEventListener("change",handleUploadPhotoChange);
+  editorCloseButton.addEventListener("click",handleEditorCloseButtonClick);
+  document.addEventListener("keydown",handleEditorCloseButtonKeyDown);
+  sliderPin.addEventListener("mousedown",handleSliderPinMouseDown);
+
+  //работа с эффектами
+  const applyEffect = (currentEffect) =>{
+    if(currentEffect === "none"){
+      previewPhoto.style.filter =  "";
+    }
+      setSliderValue(100);
+      previewPhoto.style.filter = `${EFFECT_LIST[currentEffect]}(${sliderValue.value}%)`
+      previewPhoto.className = currentEffect;
+      
+      
+  }
+   
+  const handleEffectClick = (evt) =>{
+    applyEffect(evt.target.value);
+  }
   
+  photoEffectsList.forEach((effect) =>{
+    effect.addEventListener("click", handleEffectClick);
+  });
+
+}
+renderEditorForm();

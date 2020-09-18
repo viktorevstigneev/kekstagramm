@@ -227,9 +227,13 @@ const renderEditorForm = () =>{
   const sliderValue = slider.querySelector(".effect-level__value");
   const photoEffectsList = document.querySelectorAll(".effects__radio");
   const previewPhoto = document.querySelector(".img-upload__preview img");
- 
+  const scaleValue = document.querySelector(".scale__control--value");
+  const scaleEnlargeValueButton = document.querySelector(".scale__control--bigger");
+  const scaleReduceValueButton = document.querySelector(".scale__control--smaller");
+  
   const handleUploadPhotoChange = () =>{
     uploadPhotoOverlay.classList.remove("hidden");
+    slider.classList.add("hidden");
   }
 
   const handleEditorCloseButtonClick = () =>{
@@ -252,16 +256,14 @@ const renderEditorForm = () =>{
   // работа со слайдером
   const handleSliderPinMouseDown = (evt) =>{
     evt.preventDefault();
+    let startX = evt.clientX;
+    let effectLineWidth = slider.querySelector('.effect-level__line').clientWidth;
 
-    var startX = evt.clientX;
-    var effectLineWidth = document.querySelector('.effect-level__line').clientWidth;
-
-    
     const handleSliderPinMouseMove = (moveEvt) =>{
       evt.preventDefault();
       
-      var shiftX = startX - moveEvt.clientX;
-      var pinPositionInPercent = ((sliderPin.offsetLeft - shiftX) / effectLineWidth) * 100;
+      let shiftX = startX - moveEvt.clientX;
+      let pinPositionInPercent = ((sliderPin.offsetLeft - shiftX) / effectLineWidth) * 100;
    
       startX = moveEvt.clientX;
 
@@ -295,12 +297,14 @@ const renderEditorForm = () =>{
   const applyEffect = (currentEffect) =>{
     if(currentEffect === "none"){
       previewPhoto.style.filter =  "";
+      slider.classList.add("hidden");
+    }
+    else{
+      slider.classList.remove("hidden");
     }
       setSliderValue(100);
       previewPhoto.style.filter = `${EFFECT_LIST[currentEffect]}(${sliderValue.value}%)`
       previewPhoto.className = currentEffect;
-      
-      
   }
    
   const handleEffectClick = (evt) =>{
@@ -311,5 +315,29 @@ const renderEditorForm = () =>{
     effect.addEventListener("click", handleEffectClick);
   });
 
+  const resizeImage = () =>{
+    const setNewSize = (value) =>{
+      previewPhoto.style.width = `${value}%`;
+      previewPhoto.style.height = `${value}%`;
+      scaleValue.value = `${value}%`;
+    }
+
+    let value = 100;
+    setNewSize(value);
+    
+    const handleEnlargeValueButtonClick = () =>{
+      value += 10;
+      setNewSize(value);
+    }
+    const handleReduceValueButtonClick = () =>{
+      value -= 10;
+      setNewSize(value);
+    }
+
+    scaleEnlargeValueButton.addEventListener("click",handleEnlargeValueButtonClick);
+    scaleReduceValueButton.addEventListener("click",handleReduceValueButtonClick);
+  }
+
+  resizeImage();
 }
 renderEditorForm();

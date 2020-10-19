@@ -287,8 +287,7 @@ const initFileUpload = () =>{
   }
 
   const applyEffect = (currentEffect) =>{
- 
-    if(currentEffect.value === "none"){
+    if(currentEffect === "none"){
       previewPhoto.style.filter =  "";
       slider.classList.add("hidden");
     }
@@ -296,8 +295,9 @@ const initFileUpload = () =>{
       slider.classList.remove("hidden");
     }
      setSliderValue(100);
-      previewPhoto.style.filter = ` ${Effect[currentEffect.value.toUpperCase()].cssName}(${Effect[currentEffect.value.toUpperCase()].maxValue}${Effect[currentEffect.value.toUpperCase()].unit})`;
-      previewPhoto.className = Effect[currentEffect.value.toUpperCase()].className;
+    let effect = Effect[currentEffect.toUpperCase()];
+    previewPhoto.style.filter = ` ${effect.cssName}(${effect.maxValue}${effect.unit})`;
+    previewPhoto.className = Effect[currentEffect.toUpperCase()].className;
   }
 
   const handleSliderPinMouseDown = (evt) =>{
@@ -308,29 +308,30 @@ const initFileUpload = () =>{
     
     const handleSliderPinMouseMove = (moveEvt) =>{
       evt.preventDefault();
-      
       let shiftX = startX - moveEvt.clientX;
-      let pinPositionInPercent = ((sliderPin.offsetLeft - shiftX) / effectLineWidth) * 100;
-   
+      let newX = sliderPin.offsetLeft - shiftX;
       startX = moveEvt.clientX;
-
-      if (pinPositionInPercent > 100) {
-        pinPositionInPercent = 100;
+  
+      if (newX > effectLineWidth) {
+        console.log('newX: ', newX);
+        newX = effectLineWidth;
       } 
-       if (pinPositionInPercent < 0) {
-        pinPositionInPercent = 0;
+       if (newX < 0) {
+         console.log('newX: ', newX);
+        newX = 0;
       }
 
+      let pinPositionInPercent = (newX / effectLineWidth) * 100;
       setSliderValue(pinPositionInPercent);
       previewPhoto.style.filter = ` ${effect.cssName}(${(effect.maxValue * sliderValue.value)/100}${effect.unit})`;
     }
 
     const handleSliderPinMouseUp = () =>{
       document.removeEventListener("mouseup", handleSliderPinMouseUp);
-      document.removeEventListener("mousemove", handleSliderPinMouseMove);
+      slider.removeEventListener("mousemove", handleSliderPinMouseMove);
     }
 
-    document.addEventListener("mousemove", handleSliderPinMouseMove);
+    slider.addEventListener("mousemove", handleSliderPinMouseMove);
     document.addEventListener("mouseup", handleSliderPinMouseUp);
   }
 
@@ -340,7 +341,7 @@ const initFileUpload = () =>{
   sliderPin.addEventListener("mousedown",handleSliderPinMouseDown);
 
   const handleEffectFocus = (evt) =>{
-    applyEffect(evt.target);
+    applyEffect(evt.target.value);
   }
   
   photoEffectsList.forEach((effect) =>{

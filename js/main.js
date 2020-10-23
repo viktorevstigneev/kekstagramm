@@ -73,27 +73,31 @@ const Effect = {
   NONE: {
     className: "effects__preview--none",
     cssName: "none",
+    name: "none",
     maxValue: null,
     minValue: null,
     unit: ""
   },
   CHROME: {
-    className:"effects__preview--chrome",
+    className: "effects__preview--chrome",
     cssName: "grayscale",
+    name: "chrome",
     maxValue: 1,
     minValue: 0,
     unit: ""
   },
   SEPIA: {
-    className: "effects__preview--sepia" ,
+    className: "effects__preview--sepia",
     cssName: "sepia",
+    name: "sepia",
     maxValue: 1,
     minValue: 0,
     unit: ""
   } ,
   MARVIN: {
-    className: "effects__preview--marvin" ,
-    cssName:"invert",
+    className: "effects__preview--marvin",
+    cssName: "invert",
+    name: "marvin",
     maxValue: 100,
     minValue: 0,
     unit: "%"
@@ -101,27 +105,37 @@ const Effect = {
   PHOBOS: {
     className: "effects__preview--phobos",
     cssName: "blur",
+    name: "phobos",
     maxValue: 3,
     minValue: 0,
     unit: "px"
   } ,
   HEAT: {
-    className: "effects__preview--heat" ,
+    className: "effects__preview--heat",
     cssName: "brightness",
-    maxValue:3,
-    minValue:1,
+    name: "heat",
+    maxValue: 3,
+    minValue: 1,
     unit: ""
   } 
 }
 
 const uploadedPhotos = [];
 
-const generateRandomNumberFromRange = (minValue, maxValue) =>{
+const showElement = (element) => {
+  element.classList.remove("hidden");
+}
+
+const hideElement = (element) => {
+  element.classList.add("hidden");
+}
+
+const generateRandomNumberFromRange = (minValue, maxValue) => {
   return Math.floor( Math.random() * (maxValue - minValue)) + minValue;
 }
 
-const generatePhotosData = () =>{
-  const generateRandomComments = () =>{
+const generatePhotosData = () => {
+  const generateRandomComments = () => {
     const comments = [];
     const maxCommentsAmount = generateRandomNumberFromRange(MIN_COMMENT_COUNT,MAX_COMMENT_COUNT);
 
@@ -146,12 +160,12 @@ const generatePhotosData = () =>{
   }
 }
 
-const renderPhotos = () =>{
+const renderPhotos = () => {
   const photosContainer = document.querySelector(".pictures");
   const photosContainerFragment = new DocumentFragment();
   const photoTemplate = document.querySelector("#picture").content.querySelector(".picture");
 
-  const createPhoto = (image, photoNumber) =>{
+  const createPhoto = (image, photoNumber) => {
     const photoTemplateClone = photoTemplate.cloneNode(true);
     const photo = photoTemplateClone.querySelector(".picture__img");
    
@@ -163,24 +177,24 @@ const renderPhotos = () =>{
     return photoTemplateClone;
   }
 
-  uploadedPhotos.forEach((image, photoNumber) =>{
+  uploadedPhotos.forEach((image, photoNumber) => {
     photosContainerFragment.append(createPhoto(image, photoNumber));
   });
   
   photosContainer.append(photosContainerFragment);
 
-  const handlePhotoClick = (evt) =>{
+  const handlePhotoClick = (evt) => {
     renderBigPhoto(uploadedPhotos[evt.target.dataset.index]);
   }
 
-  const handlePhotoKeyDown = (evt) =>{
+  const handlePhotoKeyDown = (evt) => {
     if (evt.code === Key.ENTER) {
       evt.preventDefault();
       renderBigPhoto(uploadedPhotos[evt.target.querySelector(".picture__img").dataset.index]);
     }
   }
   
-  photosContainer.querySelectorAll(".picture").forEach((photo) =>{
+  photosContainer.querySelectorAll(".picture").forEach((photo) => {
     photo.addEventListener("click", handlePhotoClick);
     photo.addEventListener("keydown", handlePhotoKeyDown);
   });
@@ -188,7 +202,7 @@ const renderPhotos = () =>{
   return  photosContainer;
 }
 
-const renderBigPhoto = (currentPhotoData) =>{
+const renderBigPhoto = (currentPhotoData) => {
   const bigPhotoWrapper = document.querySelector(".big-picture");
   const bigPhoto = bigPhotoWrapper.querySelector(".big-picture__img img");
   
@@ -199,12 +213,12 @@ const renderBigPhoto = (currentPhotoData) =>{
   bigPhotoWrapper.classList.remove("hidden");
   document.body.classList.add("modal-open");
 
-  const renderComments = () =>{
+  const renderComments = () => {
     const commentsContainer = bigPhotoWrapper.querySelector(".social__comments");
     const commentsContainerFragment = new DocumentFragment();
     const commentsCount = Math.min(currentPhotoData.comments.length, MAX_SHOWN_COMMENT_COUNT);
   
-    const createAvatar = (commentAvatar) =>{
+    const createAvatar = (commentAvatar) => {
       const avatar = document.createElement("img");
       avatar.className ="social__picture";
       avatar.alt = AVATAR_ALTERNATIVE_TEXT;
@@ -215,7 +229,7 @@ const renderBigPhoto = (currentPhotoData) =>{
       return avatar;
     }
 
-    const createCommentText = (commentMessage) =>{
+    const createCommentText = (commentMessage) => {
       const commentText = document.createElement("p");
       commentText.className = "social__text";
       commentText.textContent = commentMessage;
@@ -223,7 +237,7 @@ const renderBigPhoto = (currentPhotoData) =>{
       return commentText;
     }
 
-    const renderSingleComment = (commentNumber) =>{
+    const renderSingleComment = (commentNumber) => {
       const currentComment = currentPhotoData.comments[commentNumber]
       const comment = document.createElement("li");
       comment.className ="social__comment";
@@ -232,7 +246,7 @@ const renderBigPhoto = (currentPhotoData) =>{
       return comment;
     }
 
-    for (let i = 0; i < commentsCount; i++){
+    for (let i = 0; i < commentsCount; i++) {
       commentsContainerFragment.append(renderSingleComment(i));
     }
 
@@ -240,7 +254,7 @@ const renderBigPhoto = (currentPhotoData) =>{
     commentsContainer.append(commentsContainerFragment);
   }
 
-  const hideCommentsLoader = () =>{
+  const hideCommentsLoader = () => {
     bigPhotoWrapper.querySelector(".social__comment-count").classList.add("visually-hidden");
     bigPhotoWrapper.querySelector(".comments-loader").classList.add("visually-hidden");
   }
@@ -252,7 +266,7 @@ const renderBigPhoto = (currentPhotoData) =>{
 generatePhotosData();
 renderPhotos();
 
-const initFileUpload = () =>{
+const initFileUpload = () => {
   const uploadPhotoOverlay = document.querySelector(".img-upload__overlay");
   const uploadPhotoInput = document.querySelector(".img-upload__input");
   const editorCloseButton = uploadPhotoOverlay.querySelector(".img-upload__cancel");
@@ -263,75 +277,68 @@ const initFileUpload = () =>{
   const photoEffectsList = document.querySelectorAll(".effects__radio");
   const previewPhoto = document.querySelector(".img-upload__preview img");
   
-  const handleUploadPhotoInputChange = () =>{
-    uploadPhotoOverlay.classList.remove("hidden");
-    slider.classList.add("hidden");
+  const handleUploadPhotoInputChange = () => {
+    showElement(uploadPhotoOverlay);
+    hideElement(slider);
   }
 
-  const handleEditorCloseButtonClick = () =>{
-    uploadPhotoOverlay.classList.add("hidden");
+  const handleEditorCloseButtonClick = () => {
+    hideElement(uploadPhotoOverlay);
   }
 
-  const handleEditorCloseButtonKeyDown = (evt) =>{
+  const handleEditorCloseButtonKeyDown = (evt) => {
     if (evt.code === Key.ESCAPE) {
       evt.preventDefault();
-      uploadPhotoOverlay.classList.add("hidden");
+      hideElement(uploadPhotoOverlay);
       uploadPhotoInput.value = "";
     }
   }
 
-  const setSliderValue = (value) =>{
+  const setSliderValue = (value) => {
     sliderPin.style.left = `${value}%`;
     sliderDepth.style.width = `${value}%`;
     sliderValue.setAttribute("value", value);
   }
 
-  const applyEffect = (currentEffect) =>{
-    if(currentEffect === "none"){
+  const applyEffect = (currentEffect) => {
+    if (currentEffect === Effect.NONE.name) {
       previewPhoto.style.filter =  "";
-      slider.classList.add("hidden");
-    }
-    else{
-      slider.classList.remove("hidden");
+      hideElement(slider);
+    }else{
+      showElement(slider);
     }
      setSliderValue(100);
-    let effect = Effect[currentEffect.toUpperCase()];
+
+    const effect = Effect[currentEffect.toUpperCase()];
     previewPhoto.style.filter = ` ${effect.cssName}(${effect.maxValue}${effect.unit})`;
-    previewPhoto.className = Effect[currentEffect.toUpperCase()].className;
+    previewPhoto.className = effect.className;
   }
 
-  const handleSliderPinMouseDown = (evt) =>{
+  const handleSliderPinMouseDown = (evt) => {
     evt.preventDefault();
-    let startX = evt.clientX;
-    let effectLineWidth = slider.querySelector(".effect-level__line").clientWidth;
-    let effect = Effect[previewPhoto.className.substr(18, previewPhoto.className.length).toUpperCase()];
+    const effectLineWidth = slider.querySelector(".effect-level__line").clientWidth;
+    const effect = Effect[previewPhoto.className.substr(18, previewPhoto.className.length).toUpperCase()];
     
-    const handleSliderPinMouseMove = (moveEvt) =>{
+    const handleSliderPinMouseMove = (moveEvt) => {
       evt.preventDefault();
-      let shiftX = startX - moveEvt.clientX;
-      let newX = sliderPin.offsetLeft - shiftX;
-      startX = moveEvt.clientX;
+      let coord = moveEvt.clientX - effectLineWidth;
   
-      if (newX > effectLineWidth) {
-        console.log('newX: ', newX);
-        newX = effectLineWidth;
-      } 
-       if (newX < 0) {
-         console.log('newX: ', newX);
-        newX = 0;
-      }
-
-      let pinPositionInPercent = (newX / effectLineWidth) * 100;
-      setSliderValue(pinPositionInPercent);
-      previewPhoto.style.filter = ` ${effect.cssName}(${(effect.maxValue * sliderValue.value)/100}${effect.unit})`;
+			if (coord < 0) {
+				coord = 0;
+			}
+			if (coord > effectLineWidth) {
+				coord = effectLineWidth;
+			}
+			const pinPosition = (coord / effectLineWidth) * 100 ;
+      setSliderValue(pinPosition);
+      previewPhoto.style.filter = `${effect.cssName}(${(effect.maxValue * sliderValue.value) / 100}${effect.unit})`;
     }
 
-    const handleSliderPinMouseUp = () =>{
+    const handleSliderPinMouseUp = () => {
       document.removeEventListener("mouseup", handleSliderPinMouseUp);
-      slider.removeEventListener("mousemove", handleSliderPinMouseMove);
+      document.removeEventListener("mousemove", handleSliderPinMouseMove);
     }
-
-    slider.addEventListener("mousemove", handleSliderPinMouseMove);
+    document.addEventListener("mousemove", handleSliderPinMouseMove);
     document.addEventListener("mouseup", handleSliderPinMouseUp);
   }
 
@@ -340,11 +347,11 @@ const initFileUpload = () =>{
   document.addEventListener("keydown",handleEditorCloseButtonKeyDown);
   sliderPin.addEventListener("mousedown",handleSliderPinMouseDown);
 
-  const handleEffectFocus = (evt) =>{
+  const handleEffectFocus = (evt) => {
     applyEffect(evt.target.value);
   }
   
-  photoEffectsList.forEach((effect) =>{
+  photoEffectsList.forEach((effect) => {
     effect.addEventListener("focus", handleEffectFocus);
   });
  

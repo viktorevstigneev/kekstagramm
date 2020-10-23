@@ -322,16 +322,12 @@ const initFileUpload = () => {
     const handleSliderPinMouseMove = (moveEvt) => {
       evt.preventDefault();
       let coord = moveEvt.clientX - effectLineWidth;
-  
-			if (coord < 0) {
-				coord = 0;
+
+			if ((coord < effectLineWidth) && (coord > 0)) {
+        const pinPosition = (coord / effectLineWidth) * 100 ;
+        setSliderValue(pinPosition);
+        previewPhoto.style.filter = `${effect.cssName}(${(effect.maxValue * sliderValue.value) / 100}${effect.unit})`;
 			}
-			if (coord > effectLineWidth) {
-				coord = effectLineWidth;
-			}
-			const pinPosition = (coord / effectLineWidth) * 100 ;
-      setSliderValue(pinPosition);
-      previewPhoto.style.filter = `${effect.cssName}(${(effect.maxValue * sliderValue.value) / 100}${effect.unit})`;
     }
 
     const handleSliderPinMouseUp = () => {

@@ -385,8 +385,8 @@ const initFileUpload = () => {
       hashTagFromLattice: getSingleHashTag(hashTags) === "#", // хеш-тег только из решетки
       hashTagSeparator: getSingleHashTag(hashTags).includes("#", 1),  // хеш-тег не разделяется пробелами
       sameHashTagTwice: getAmountOfUniqueHashTags(hashTags) > 0, // одинаковый хеш-тег
-      maxHashTagsAmount: hashTags.length > 5, // количество хеш-тегов больше 5
-      maxHashTagLength: getSingleHashTag(hashTags).length > 20, // хеш-тег превышет длину 20 символов
+      maxHashTagsAmount: hashTags.length > MAX_HASH_TAGS_AMOUNT, // количество хеш-тегов больше 5
+      maxHashTagLength: getSingleHashTag(hashTags).length > MAX_HASH_TAG_LENGTH, // хеш-тег превышет длину 20 символов
     };
 
     const getErrorMessage = () => {

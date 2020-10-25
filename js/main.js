@@ -13,12 +13,13 @@ const MAX_COMMENT_COUNT = 10;
 const AVATAR_WIDTH = 35;
 const AVATAR_HEIGHT = 35;
 const AVATAR_ALTERNATIVE_TEXT = "Аватар автора комментария";
+const MAX_HASH_TAGS_AMOUNT = 5;
+const MAX_HASH_TAG_LENGTH = 20;
 
 const Key = {
   ENTER: "Enter",
   ESCAPE: "Escape"
 }
-
 
 const COMMENTS_LIST = [
   "Всё отлично!",
@@ -93,7 +94,7 @@ const Effect = {
     maxValue: 1,
     minValue: 0,
     unit: ""
-  } ,
+  },
   MARVIN: {
     className: "effects__preview--marvin",
     cssName: "invert",
@@ -101,7 +102,7 @@ const Effect = {
     maxValue: 100,
     minValue: 0,
     unit: "%"
-  } ,
+  },
   PHOBOS: {
     className: "effects__preview--phobos",
     cssName: "blur",
@@ -109,7 +110,7 @@ const Effect = {
     maxValue: 3,
     minValue: 0,
     unit: "px"
-  } ,
+  },
   HEAT: {
     className: "effects__preview--heat",
     cssName: "brightness",
@@ -276,6 +277,8 @@ const initFileUpload = () => {
   const sliderValue = slider.querySelector(".effect-level__value");
   const photoEffectsList = document.querySelectorAll(".effects__radio");
   const previewPhoto = document.querySelector(".img-upload__preview img");
+  const hashTagsField = uploadPhotoOverlay.querySelector(".text__hashtags");
+  const uploadPhotoForm = document.querySelector(".img-upload__form");
   
   const handleUploadPhotoInputChange = () => {
     showElement(uploadPhotoOverlay);
@@ -338,18 +341,80 @@ const initFileUpload = () => {
     document.addEventListener("mouseup", handleSliderPinMouseUp);
   }
 
-  uploadPhotoInput.addEventListener("change",handleUploadPhotoInputChange);
-  editorCloseButton.addEventListener("click",handleEditorCloseButtonClick);
-  document.addEventListener("keydown",handleEditorCloseButtonKeyDown);
-  sliderPin.addEventListener("mousedown",handleSliderPinMouseDown);
-
   const handleEffectFocus = (evt) => {
     applyEffect(evt.target.value);
   }
   
+  const handleHashTagsFieldInput = () =>{
+    hashTagsField.setCustomValidity(getFormValidationError());
+  }
+ 
+  const getFormValidationError = () => {
+    const errorMessages = {
+      noHashTagSymbol: "Хэш-тег должен начинатся с символа # (решётка).",
+      hashTagFromLattice: "Хеш-тег не может состоять только из одной решётки.",
+      hashTagSeparator: "Хэш-теги должны разделятся пробелами.",
+      sameHashTagTwice: "Один и тот же хэш-тег не может быть использован дважды.",
+      maxHashTagsAmount: "Нельзя указать больше пяти хэш-тегов.",
+      maxHashTagLength: "Максимальная длина одного хэш-тега 20 символов, включая решётку."
+    }
+
+    let errorMessage = "";
+    const hashTags = hashTagsField.value.toLowerCase().split(" ");
+  
+    const getAmountOfUniqueHashTags = (array) => {
+      return  array.filter((item, index) => array.indexOf(item) != index).length;
+    }
+
+    const getFistSymbolOfHashTag = (array) => {
+      let result = "";
+      array.forEach((item) => { result = item[0] });
+
+      return result;
+    }
+
+    const getSingleHashTag = (array) => {
+      let result = "";
+      array.forEach((item) => { result = item });
+
+      return result;
+    }
+    
+    const error = {  
+      noHashTagSymbol: getFistSymbolOfHashTag(hashTags) != "#", // нет символа #
+      hashTagFromLattice: getSingleHashTag(hashTags) === "#", // хеш-тег только из решетки
+      hashTagSeparator: getSingleHashTag(hashTags).includes("#", 1),  // хеш-тег не разделяется пробелами
+      sameHashTagTwice: getAmountOfUniqueHashTags(hashTags) > 0, // одинаковый хеш-тег
+      maxHashTagsAmount: hashTags.length > 5, // количество хеш-тегов больше 5
+      maxHashTagLength: getSingleHashTag(hashTags).length > 20, // хеш-тег превышет длину 20 символов
+    };
+
+    const getErrorMessage = () => {
+      error.noHashTagSymbol ? errorMessage += errorMessages.noHashTagSymbol : "";
+      error.hashTagFromLattice ? errorMessage += errorMessages.hashTagFromLattice : "";
+      error.hashTagSeparator ? errorMessage += errorMessages.hashTagSeparator : "";
+      error.sameHashTagTwice ? errorMessage += errorMessages.sameHashTagTwice : "";
+      error.maxHashTagsAmount ? errorMessage += errorMessages.maxHashTagsAmount : "";
+      error.maxHashTagLength ? errorMessage += errorMessages.maxHashTagLength : "";
+
+      return errorMessage;
+    }
+
+   return getErrorMessage();
+  }
+
+  uploadPhotoInput.addEventListener("change", handleUploadPhotoInputChange);
+  editorCloseButton.addEventListener("click", handleEditorCloseButtonClick);
+  document.addEventListener("keydown", handleEditorCloseButtonKeyDown);
+  sliderPin.addEventListener("mousedown", handleSliderPinMouseDown);
+  hashTagsField.addEventListener("input", handleHashTagsFieldInput);
+
   photoEffectsList.forEach((effect) => {
     effect.addEventListener("focus", handleEffectFocus);
-  });
- 
+  });  
+
+  hashTagsField.onfocus = () => {document.removeEventListener("keydown", handleEditorCloseButtonKeyDown)};
+  hashTagsField.onblur = () => {document.addEventListener("keydown", handleEditorCloseButtonKeyDown)}  ;
+
 }
 initFileUpload();

@@ -287,6 +287,8 @@ const initFileUpload = () => {
 
   const handleEditorCloseButtonClick = () => {
     hideElement(uploadPhotoOverlay);
+    uploadPhotoInput.value = "";
+    hashTagsField.value = "";
   }
 
   const handleEditorCloseButtonKeyDown = (evt) => {
@@ -294,6 +296,7 @@ const initFileUpload = () => {
       evt.preventDefault();
       hideElement(uploadPhotoOverlay);
       uploadPhotoInput.value = "";
+      hashTagsField.value = "";
     }
   }
 
@@ -345,11 +348,11 @@ const initFileUpload = () => {
     applyEffect(evt.target.value);
   }
   
-  const handleHashTagsFieldInput = () =>{
-    hashTagsField.setCustomValidity(getFormValidationError());
+  const handleHashTagsFieldInput = (evt) =>{
+    hashTagsField.setCustomValidity(getFormValidationError(evt));
   }
  
-  const getFormValidationError = () => {
+  const getFormValidationError = (evt) => {
     const errorMessages = {
       noHashTagSymbol: "Хэш-тег должен начинатся с символа # (решётка).",
       hashTagFromLattice: "Хеш-тег не может состоять только из одной решётки.",
@@ -360,10 +363,10 @@ const initFileUpload = () => {
     }
 
     let errorMessage = "";
-    const hashTags = hashTagsField.value.toLowerCase().split(" ");
+    const hashTags = evt.target.value.toLowerCase().split(" ");
   
     const getAmountOfUniqueHashTags = (array) => {
-      return  array.filter((item, index) => array.indexOf(item) != index).length;
+        return  array.filter((item, index) => array.indexOf(item) != index).length;
     }
 
     const getFistSymbolOfHashTag = (array) => {
@@ -374,33 +377,56 @@ const initFileUpload = () => {
     }
 
     const getSingleHashTag = (array) => {
-      let result = "";
+      let result = null;
       array.forEach((item) => { result = item });
 
       return result;
     }
-    
-    const error = {  
-      noHashTagSymbol: getFistSymbolOfHashTag(hashTags) != "#", // нет символа #
-      hashTagFromLattice: getSingleHashTag(hashTags) === "#", // хеш-тег только из решетки
-      hashTagSeparator: getSingleHashTag(hashTags).includes("#", 1),  // хеш-тег не разделяется пробелами
-      sameHashTagTwice: getAmountOfUniqueHashTags(hashTags) > 0, // одинаковый хеш-тег
-      maxHashTagsAmount: hashTags.length > MAX_HASH_TAGS_AMOUNT, // количество хеш-тегов больше 5
-      maxHashTagLength: getSingleHashTag(hashTags).length > MAX_HASH_TAG_LENGTH, // хеш-тег превышет длину 20 символов
-    };
 
-    const getErrorMessage = () => {
-      error.noHashTagSymbol ? errorMessage += errorMessages.noHashTagSymbol : "";
-      error.hashTagFromLattice ? errorMessage += errorMessages.hashTagFromLattice : "";
-      error.hashTagSeparator ? errorMessage += errorMessages.hashTagSeparator : "";
-      error.sameHashTagTwice ? errorMessage += errorMessages.sameHashTagTwice : "";
-      error.maxHashTagsAmount ? errorMessage += errorMessages.maxHashTagsAmount : "";
-      error.maxHashTagLength ? errorMessage += errorMessages.maxHashTagLength : "";
+    // const error = {  
+    //   noHashTagSymbol: getSingleHashTag(hashTags)[0] != "#" && hashTagsField.value != "", // нет символа #
+    //   hashTagFromLattice: getSingleHashTag(hashTags) === "#", // хеш-тег только из решетки
+    //   hashTagSeparator: getSingleHashTag(hashTags).includes("#", 1),  // хеш-тег не разделяется пробелами
+    //   sameHashTagTwice: getAmountOfUniqueHashTags(hashTags) > 0, // одинаковый хеш-тег
+    //   maxHashTagsAmount: hashTags.length > MAX_HASH_TAGS_AMOUNT, // количество хеш-тегов больше 5
+    //   maxHashTagLength: getSingleHashTag(hashTags).length > MAX_HASH_TAG_LENGTH, // хеш-тег превышет длину 20 символов
+    // }
+
+    const error = {  
+      noHashTagSymbol: `hashtag[0] != "#"`, // нет символа #
+      hashTagFromLattice: `hashtag === "#"`, // хеш-тег только из решетки
+      hashTagSeparator: `hashtag.includes("#", 1)`,  // хеш-тег не разделяется пробелами
+      sameHashTagTwice: `getAmountOfUniqueHashTags(hashTags) > 0`, // одинаковый хеш-тег
+      maxHashTagsAmount: `hashTags.length > MAX_HASH_TAGS_AMOUNT`, // количество хеш-тегов больше 5
+      maxHashTagLength: `hashtag.length > MAX_HASH_TAG_LENGTH`, // хеш-тег превышет длину 20 символов
+    }
+
+    const getErrorMessage = (errorObject) => {
+      hashTags.forEach((hashtag) =>{
+        eval(errorObject.noHashTagSymbol) ? errorMessage += errorMessages.noHashTagSymbol : "";
+        eval(errorObject.hashTagFromLattice) ? errorMessage += errorMessages.hashTagFromLattice : "";
+        eval(errorObject.hashTagSeparator) ? errorMessage += errorMessages.hashTagSeparator : "";
+        eval(errorObject.maxHashTagLength) ? errorMessage += errorMessages.maxHashTagLength : "";
+      });
+
+      eval(errorObject.sameHashTagTwice)  ? errorMessage += errorMessages.sameHashTagTwice : "";
+      eval(errorObject.maxHashTagsAmount) ? errorMessage += errorMessages.maxHashTagsAmount : "";
 
       return errorMessage;
     }
+    
+    // const getErrorMessage = (errorObject) => {
+    //   errorObject.noHashTagSymbol ? errorMessage += errorMessages.noHashTagSymbol : "";
+    //   errorObject.hashTagFromLattice ? errorMessage += errorMessages.hashTagFromLattice : "";
+    //   errorObject.hashTagSeparator ? errorMessage += errorMessages.hashTagSeparator : "";
+    //   errorObject.sameHashTagTwice ? errorMessage += errorMessages.sameHashTagTwice : "";
+    //   errorObject.maxHashTagsAmount ? errorMessage += errorMessages.maxHashTagsAmount : "";
+    //   errorObject.maxHashTagLength ? errorMessage += errorMessages.maxHashTagLength : "";
 
-   return getErrorMessage();
+    //   return errorMessage;
+    // }
+
+   return getErrorMessage(error);
   }
 
   uploadPhotoInput.addEventListener("change", handleUploadPhotoInputChange);
@@ -414,7 +440,6 @@ const initFileUpload = () => {
   });  
 
   hashTagsField.onfocus = () => {document.removeEventListener("keydown", handleEditorCloseButtonKeyDown)};
-  hashTagsField.onblur = () => {document.addEventListener("keydown", handleEditorCloseButtonKeyDown)}  ;
-
+  hashTagsField.onblur = () => {document.addEventListener("keydown", handleEditorCloseButtonKeyDown)} ;
 }
 initFileUpload();

@@ -13,8 +13,10 @@ const MAX_COMMENT_COUNT = 10;
 const AVATAR_WIDTH = 35;
 const AVATAR_HEIGHT = 35;
 const AVATAR_ALTERNATIVE_TEXT = "Аватар автора комментария";
+const MAX_SLIDER_VALUE = 100;
 const MAX_HASH_TAGS_AMOUNT = 5;
 const MAX_HASH_TAG_LENGTH = 20;
+const MAX_DESCRIPTION_FIELD_LENGTH = 140;
 
 const Key = {
   ENTER: "Enter",
@@ -278,6 +280,7 @@ const initFileUpload = () => {
   const photoEffectsList = document.querySelectorAll(".effects__radio");
   const previewPhoto = document.querySelector(".img-upload__preview img");
   const hashTagsField = uploadPhotoOverlay.querySelector(".text__hashtags");
+  const descriptionField = uploadPhotoOverlay.querySelector(".text__description"); 
   const uploadPhotoForm = document.querySelector(".img-upload__form");
   
   const handleUploadPhotoInputChange = () => {
@@ -313,7 +316,7 @@ const initFileUpload = () => {
     }else{
       showElement(slider);
     }
-     setSliderValue(100);
+     setSliderValue(MAX_SLIDER_VALUE);
 
     const effect = Effect[currentEffect.toUpperCase()];
     previewPhoto.style.filter = ` ${effect.cssName}(${effect.maxValue}${effect.unit})`;
@@ -330,9 +333,9 @@ const initFileUpload = () => {
       let coord = moveEvt.clientX - effectLineWidth;
 
 			if ((coord < effectLineWidth) && (coord > 0)) {
-        const pinPosition = (coord / effectLineWidth) * 100 ;
+        const pinPosition = (coord / effectLineWidth) * MAX_SLIDER_VALUE ;
         setSliderValue(pinPosition);
-        previewPhoto.style.filter = `${effect.cssName}(${(effect.maxValue * sliderValue.value) / 100}${effect.unit})`;
+        previewPhoto.style.filter = `${effect.cssName}(${(effect.maxValue * sliderValue.value) / MAX_SLIDER_VALUE}${effect.unit})`;
 			}
     }
 
@@ -348,86 +351,46 @@ const initFileUpload = () => {
     applyEffect(evt.target.value);
   }
   
-  const handleHashTagsFieldInput = (evt) =>{
+  const handleHashTagsFieldInput = (evt) => {
     hashTagsField.setCustomValidity(getFormValidationError(evt));
   }
- 
+
   const getFormValidationError = (evt) => {
     const errorMessages = {
-      noHashTagSymbol: "Хэш-тег должен начинатся с символа # (решётка).",
-      hashTagFromLattice: "Хеш-тег не может состоять только из одной решётки.",
-      hashTagSeparator: "Хэш-теги должны разделятся пробелами.",
-      sameHashTagTwice: "Один и тот же хэш-тег не может быть использован дважды.",
-      maxHashTagsAmount: "Нельзя указать больше пяти хэш-тегов.",
-      maxHashTagLength: "Максимальная длина одного хэш-тега 20 символов, включая решётку."
+      noHashTagSymbol: "Хэш-тег должен начинатся с символа # (решётка). ",
+      hashTagFromLattice: "Хеш-тег не может состоять только из одной решётки. ",
+      hashTagSeparator: "Хэш-теги должны разделятся пробелами. ",
+      sameHashTagTwice: "Один и тот же хэш-тег не может быть использован дважды. ",
+      maxHashTagsAmount: "Нельзя указать больше пяти хэш-тегов. ",
+      maxHashTagLength: "Максимальная длина одного хэш-тега 20 символов, включая решётку. "
     }
 
-    let errorMessage = "";
-    const hashTags = evt.target.value.toLowerCase().split(" ");
+    let errorMessage = [];
+    const hashTags = evt.target.value.toLowerCase().split(" ").filter(hashTag => !!hashTag);
   
     const getAmountOfUniqueHashTags = (array) => {
         return  array.filter((item, index) => array.indexOf(item) != index).length;
     }
 
-    const getFistSymbolOfHashTag = (array) => {
-      let result = "";
-      array.forEach((item) => { result = item[0] });
-
-      return result;
-    }
-
-    const getSingleHashTag = (array) => {
-      let result = null;
-      array.forEach((item) => { result = item });
-
-      return result;
-    }
-
-    // const error = {  
-    //   noHashTagSymbol: getSingleHashTag(hashTags)[0] != "#" && hashTagsField.value != "", // нет символа #
-    //   hashTagFromLattice: getSingleHashTag(hashTags) === "#", // хеш-тег только из решетки
-    //   hashTagSeparator: getSingleHashTag(hashTags).includes("#", 1),  // хеш-тег не разделяется пробелами
-    //   sameHashTagTwice: getAmountOfUniqueHashTags(hashTags) > 0, // одинаковый хеш-тег
-    //   maxHashTagsAmount: hashTags.length > MAX_HASH_TAGS_AMOUNT, // количество хеш-тегов больше 5
-    //   maxHashTagLength: getSingleHashTag(hashTags).length > MAX_HASH_TAG_LENGTH, // хеш-тег превышет длину 20 символов
-    // }
-
-    const error = {  
-      noHashTagSymbol: `hashtag[0] != "#"`, // нет символа #
-      hashTagFromLattice: `hashtag === "#"`, // хеш-тег только из решетки
-      hashTagSeparator: `hashtag.includes("#", 1)`,  // хеш-тег не разделяется пробелами
-      sameHashTagTwice: `getAmountOfUniqueHashTags(hashTags) > 0`, // одинаковый хеш-тег
-      maxHashTagsAmount: `hashTags.length > MAX_HASH_TAGS_AMOUNT`, // количество хеш-тегов больше 5
-      maxHashTagLength: `hashtag.length > MAX_HASH_TAG_LENGTH`, // хеш-тег превышет длину 20 символов
-    }
-
-    const getErrorMessage = (errorObject) => {
+    const getErrorMessageForHashTag = () => {
       hashTags.forEach((hashtag) =>{
-        eval(errorObject.noHashTagSymbol) ? errorMessage += errorMessages.noHashTagSymbol : "";
-        eval(errorObject.hashTagFromLattice) ? errorMessage += errorMessages.hashTagFromLattice : "";
-        eval(errorObject.hashTagSeparator) ? errorMessage += errorMessages.hashTagSeparator : "";
-        eval(errorObject.maxHashTagLength) ? errorMessage += errorMessages.maxHashTagLength : "";
+        hashtag[0] != "#" ? errorMessage.push(errorMessages.noHashTagSymbol) : "";
+        hashtag === "#" ? errorMessage.push(errorMessages.hashTagFromLattice) : "";
+        hashtag.includes("#", 1) ? errorMessage.push(errorMessages.hashTagSeparator) : "";
+        hashtag.length > MAX_HASH_TAG_LENGTH ? errorMessage.push( errorMessages.maxHashTagLength) : "";
       });
 
-      eval(errorObject.sameHashTagTwice)  ? errorMessage += errorMessages.sameHashTagTwice : "";
-      eval(errorObject.maxHashTagsAmount) ? errorMessage += errorMessages.maxHashTagsAmount : "";
-
-      return errorMessage;
-    }
+      getAmountOfUniqueHashTags(hashTags) > 0  ? errorMessage.push(errorMessages.sameHashTagTwice) : "";
+      hashTags.length > MAX_HASH_TAGS_AMOUNT ? errorMessage.push(errorMessages.maxHashTagsAmount) : "";
+      let result = errorMessage.filter((item, index) => errorMessage.indexOf(item) === index).join("");
     
-    // const getErrorMessage = (errorObject) => {
-    //   errorObject.noHashTagSymbol ? errorMessage += errorMessages.noHashTagSymbol : "";
-    //   errorObject.hashTagFromLattice ? errorMessage += errorMessages.hashTagFromLattice : "";
-    //   errorObject.hashTagSeparator ? errorMessage += errorMessages.hashTagSeparator : "";
-    //   errorObject.sameHashTagTwice ? errorMessage += errorMessages.sameHashTagTwice : "";
-    //   errorObject.maxHashTagsAmount ? errorMessage += errorMessages.maxHashTagsAmount : "";
-    //   errorObject.maxHashTagLength ? errorMessage += errorMessages.maxHashTagLength : "";
+      return result;
+    }
 
-    //   return errorMessage;
-    // }
-
-   return getErrorMessage(error);
+   return getErrorMessageForHashTag();
   }
+  
+  descriptionField.maxlength = MAX_DESCRIPTION_FIELD_LENGTH;
 
   uploadPhotoInput.addEventListener("change", handleUploadPhotoInputChange);
   editorCloseButton.addEventListener("click", handleEditorCloseButtonClick);
@@ -439,7 +402,11 @@ const initFileUpload = () => {
     effect.addEventListener("focus", handleEffectFocus);
   });  
 
+  //мне не нравится такой способ, но до другого я не додумался и в гугле ничего не нашел
   hashTagsField.onfocus = () => {document.removeEventListener("keydown", handleEditorCloseButtonKeyDown)};
   hashTagsField.onblur = () => {document.addEventListener("keydown", handleEditorCloseButtonKeyDown)} ;
+  descriptionField.onfocus = () => {document.removeEventListener("keydown", handleEditorCloseButtonKeyDown)};
+  descriptionField.onblur = () => {document.addEventListener("keydown", handleEditorCloseButtonKeyDown)} ;
+
 }
 initFileUpload();

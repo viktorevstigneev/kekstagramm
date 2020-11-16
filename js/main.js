@@ -16,7 +16,6 @@ const AVATAR_ALTERNATIVE_TEXT = "Аватар автора комментари�
 const MAX_SLIDER_VALUE = 100;
 const MAX_HASH_TAGS_AMOUNT = 5;
 const MAX_HASH_TAG_LENGTH = 20;
-const MAX_DESCRIPTION_FIELD_LENGTH = 140;
 
 const Key = {
   ENTER: "Enter",
@@ -295,7 +294,7 @@ const initFileUpload = () => {
   }
 
   const handleEditorCloseButtonKeyDown = (evt) => {
-    if (evt.code === Key.ESCAPE) {
+    if ((evt.code === Key.ESCAPE) && ((hashTagsField !== document.activeElement) && (descriptionField !== document.activeElement))) {
       evt.preventDefault();
       hideElement(uploadPhotoOverlay);
       uploadPhotoInput.value = "";
@@ -368,29 +367,27 @@ const initFileUpload = () => {
     let errorMessage = [];
     const hashTags = evt.target.value.toLowerCase().split(" ").filter(hashTag => !!hashTag);
   
-    const getAmountOfUniqueHashTags = (array) => {
-        return  array.filter((item, index) => array.indexOf(item) != index).length;
+    const getAmountOfUniqueHashTags = (hashtags) => {
+        return  hashtags.filter((item, index) => hashtags.indexOf(item) != index).length;
     }
 
     const getErrorMessageForHashTag = () => {
       hashTags.forEach((hashtag) =>{
-        hashtag[0] != "#" ? errorMessage.push(errorMessages.noHashTagSymbol) : "";
-        hashtag === "#" ? errorMessage.push(errorMessages.hashTagFromLattice) : "";
-        hashtag.includes("#", 1) ? errorMessage.push(errorMessages.hashTagSeparator) : "";
-        hashtag.length > MAX_HASH_TAG_LENGTH ? errorMessage.push( errorMessages.maxHashTagLength) : "";
+        hashtag[0] != "#" && errorMessage.push(errorMessages.noHashTagSymbol);
+        hashtag === "#" && errorMessage.push(errorMessages.hashTagFromLattice);
+        hashtag.includes("#", 1) && errorMessage.push(errorMessages.hashTagSeparator);
+        hashtag.length > MAX_HASH_TAG_LENGTH && errorMessage.push( errorMessages.maxHashTagLength);
       });
 
-      getAmountOfUniqueHashTags(hashTags) > 0  ? errorMessage.push(errorMessages.sameHashTagTwice) : "";
-      hashTags.length > MAX_HASH_TAGS_AMOUNT ? errorMessage.push(errorMessages.maxHashTagsAmount) : "";
-      let result = errorMessage.filter((item, index) => errorMessage.indexOf(item) === index).join("");
+      getAmountOfUniqueHashTags(hashTags) > 0  && errorMessage.push(errorMessages.sameHashTagTwice);
+      hashTags.length > MAX_HASH_TAGS_AMOUNT && errorMessage.push(errorMessages.maxHashTagsAmount);
+      const result = errorMessage.filter((item, index) => errorMessage.indexOf(item) === index).join("");
     
       return result;
     }
 
    return getErrorMessageForHashTag();
   }
-  
-  descriptionField.maxlength = MAX_DESCRIPTION_FIELD_LENGTH;
 
   uploadPhotoInput.addEventListener("change", handleUploadPhotoInputChange);
   editorCloseButton.addEventListener("click", handleEditorCloseButtonClick);
@@ -401,12 +398,6 @@ const initFileUpload = () => {
   photoEffectsList.forEach((effect) => {
     effect.addEventListener("focus", handleEffectFocus);
   });  
-
-  //мне не нравится такой способ, но до другого я не додумался и в гугле ничего не нашел
-  hashTagsField.onfocus = () => {document.removeEventListener("keydown", handleEditorCloseButtonKeyDown)};
-  hashTagsField.onblur = () => {document.addEventListener("keydown", handleEditorCloseButtonKeyDown)} ;
-  descriptionField.onfocus = () => {document.removeEventListener("keydown", handleEditorCloseButtonKeyDown)};
-  descriptionField.onblur = () => {document.addEventListener("keydown", handleEditorCloseButtonKeyDown)} ;
 
 }
 initFileUpload();

@@ -281,7 +281,8 @@ const initFileUpload = () => {
   const hashTagsField = uploadPhotoOverlay.querySelector(".text__hashtags");
   const descriptionField = uploadPhotoOverlay.querySelector(".text__description"); 
   const uploadPhotoForm = document.querySelector(".img-upload__form");
-  
+  const isHashTagFieldNotActive = ((hashTagsField !== document.activeElement) && (descriptionField !== document.activeElement));
+
   const handleUploadPhotoInputChange = () => {
     showElement(uploadPhotoOverlay);
     hideElement(slider);
@@ -294,7 +295,7 @@ const initFileUpload = () => {
   }
 
   const handleEditorCloseButtonKeyDown = (evt) => {
-    if ((evt.code === Key.ESCAPE) && ((hashTagsField !== document.activeElement) && (descriptionField !== document.activeElement))) {
+    if ((evt.code === Key.ESCAPE) && isHashTagFieldNotActive) {
       evt.preventDefault();
       hideElement(uploadPhotoOverlay);
       uploadPhotoInput.value = "";
@@ -364,14 +365,14 @@ const initFileUpload = () => {
       maxHashTagLength: "Максимальная длина одного хэш-тега 20 символов, включая решётку. "
     }
 
-    let errorMessage = [];
     const hashTags = evt.target.value.toLowerCase().split(" ").filter(hashTag => !!hashTag);
   
     const getAmountOfUniqueHashTags = (hashtags) => {
         return  hashtags.filter((item, index) => hashtags.indexOf(item) != index).length;
     }
 
-    const getErrorMessageForHashTag = () => {
+    const getErrorsMessagesForHashTags = () => {
+      const errorMessage = [];
       hashTags.forEach((hashtag) =>{
         hashtag[0] != "#" && errorMessage.push(errorMessages.noHashTagSymbol);
         hashtag === "#" && errorMessage.push(errorMessages.hashTagFromLattice);
@@ -386,7 +387,7 @@ const initFileUpload = () => {
       return result;
     }
 
-   return getErrorMessageForHashTag();
+   return getErrorsMessagesForHashTags();
   }
 
   uploadPhotoInput.addEventListener("change", handleUploadPhotoInputChange);

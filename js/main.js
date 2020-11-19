@@ -281,8 +281,7 @@ const initFileUpload = () => {
   const hashTagsField = uploadPhotoOverlay.querySelector(".text__hashtags");
   const descriptionField = uploadPhotoOverlay.querySelector(".text__description"); 
   const uploadPhotoForm = document.querySelector(".img-upload__form");
-  const isHashTagFieldNotActive = ((hashTagsField !== document.activeElement) && (descriptionField !== document.activeElement));
-
+  
   const handleUploadPhotoInputChange = () => {
     showElement(uploadPhotoOverlay);
     hideElement(slider);
@@ -295,7 +294,8 @@ const initFileUpload = () => {
   }
 
   const handleEditorCloseButtonKeyDown = (evt) => {
-    if ((evt.code === Key.ESCAPE) && isHashTagFieldNotActive) {
+    const isFieldsNotActive = (hashTagsField !== document.activeElement) && (descriptionField !== document.activeElement);
+    if ((evt.code === Key.ESCAPE) && (isFieldsNotActive)) {
       evt.preventDefault();
       hideElement(uploadPhotoOverlay);
       uploadPhotoInput.value = "";

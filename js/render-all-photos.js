@@ -23,15 +23,17 @@
     
     photosContainer.append(photosContainerFragment);
   
+    const showBigPhoto = (evt) => {
+      window.renderBigPhoto(window.uploadedPhotos[evt.currentTarget.querySelector(".picture__img").dataset.index]);
+    }
+
     const handlePhotoClick = (evt) => {
       window.renderBigPhoto(window.uploadedPhotos[evt.target.dataset.index]);
     }
   
     const handlePhotoKeyDown = (evt) => {
-      if (evt.code === Key.ENTER) {
-        evt.preventDefault();
-        renderBigPhoto(uploadedPhotos[evt.target.querySelector(".picture__img").dataset.index]);
-      }
+      evt.preventDefault();
+      window.utils.isEnterEvent(evt, showBigPhoto);
     }
     
     photosContainer.querySelectorAll(".picture").forEach((photo) => {

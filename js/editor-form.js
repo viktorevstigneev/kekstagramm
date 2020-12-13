@@ -69,24 +69,26 @@
     } 
   }
   
+  const closeEditForm = () => {
+    uploadPhotoInput.value = "";
+    hashTagsField.value = "";
+    descriptionField.value = "";
+		window.utils.hideElement(uploadPhotoOverlay);
+	}
+
   const handleUploadPhotoInputChange = () => {
     window.utils.showElement(uploadPhotoOverlay);
     window.utils.hideElement(slider);
   }
 
   const handleEditorCloseButtonClick = () => {
-    window.utils.hideElement(uploadPhotoOverlay);
-    uploadPhotoInput.value = "";
-    hashTagsField.value = "";
+    closeEditForm();
   }
 
   const handleEditorCloseButtonKeyDown = (evt) => {
     const isFieldsNotActive = (hashTagsField !== document.activeElement) && (descriptionField !== document.activeElement);
-    if ((evt.code ===  window.utils.Key.ESCAPE) && (isFieldsNotActive)) {
+    if ((isFieldsNotActive) && (window.utils.isEscapeEvent(evt, closeEditForm))) {
       evt.preventDefault();
-      window.utils.hideElement(uploadPhotoOverlay);
-      uploadPhotoInput.value = "";
-      hashTagsField.value = "";
     }
   }
 

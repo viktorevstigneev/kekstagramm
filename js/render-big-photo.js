@@ -5,16 +5,17 @@
   const AVATAR_HEIGHT = 35;
   const AVATAR_ALTERNATIVE_TEXT = "Аватар автора комментария";
   const MAX_SHOWN_COMMENT_COUNT = 5;
+  const bigPhotoCloseButton = document.querySelector(".big-picture__cancel");
 
   const renderBigPhoto = (currentPhotoData) => {
     const bigPhotoWrapper = document.querySelector(".big-picture");
     const bigPhoto = bigPhotoWrapper.querySelector(".big-picture__img img");
-    
+
     bigPhoto.src = currentPhotoData.url;
     bigPhotoWrapper.querySelector(".comments-count").textContent = currentPhotoData.comments.length;
     bigPhotoWrapper.querySelector(".likes-count").textContent = currentPhotoData.likes;
     bigPhotoWrapper.querySelector(".social__caption").textContent = currentPhotoData.description;
-    bigPhotoWrapper.classList.remove("hidden");
+    window.utils.showElement(bigPhotoWrapper);
     document.body.classList.add("modal-open");
   
     const renderComments = () => {
@@ -62,7 +63,10 @@
       bigPhotoWrapper.querySelector(".social__comment-count").classList.add("visually-hidden");
       bigPhotoWrapper.querySelector(".comments-loader").classList.add("visually-hidden");
     }
-  
+    const handleEditorCloseButtonClick = () => {
+      window.utils.hideElement(bigPhotoWrapper);
+    }
+    bigPhotoCloseButton.addEventListener("click",handleEditorCloseButtonClick);
     renderComments();
     hideCommentsLoader();
   }

@@ -17,9 +17,21 @@
   const generateRandomNumberFromRange = (minValue, maxValue) => {
     return Math.floor( Math.random() * (maxValue - minValue)) + minValue;
   }
+  const isEscapeEvent = (evt, callback) => {
+    if (evt.code === Key.ESCAPE) {
+      callback();
+    }
+  } 
+  
+  const isEnterEvent = (evt, callback) => {
+    if (evt.code === Key.ENTER) {
+      callback(evt);
+    }
+  }
 
   window.utils = {
-    Key,
+    isEscapeEvent,
+    isEnterEvent,
     showElement,
     hideElement,
     generateRandomNumberFromRange

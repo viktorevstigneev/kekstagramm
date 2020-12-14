@@ -22,10 +22,6 @@
     });
     
     photosContainer.append(photosContainerFragment);
-  
-    const showBigPhoto = (evt) => {
-      window.renderBigPhoto(window.uploadedPhotos[evt.currentTarget.querySelector(".picture__img").dataset.index]);
-    }
 
     const handlePhotoClick = (evt) => {
       window.renderBigPhoto(window.uploadedPhotos[evt.target.dataset.index]);
@@ -33,7 +29,9 @@
   
     const handlePhotoKeyDown = (evt) => {
       evt.preventDefault();
-      window.utils.isEnterEvent(evt, showBigPhoto);
+      window.utils.isEnterEvent(evt, (evt) => {
+        window.renderBigPhoto(window.uploadedPhotos[evt.currentTarget.querySelector(".picture__img").dataset.index]);
+      });
     }
     
     photosContainer.querySelectorAll(".picture").forEach((photo) => {

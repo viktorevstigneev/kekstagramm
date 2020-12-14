@@ -87,7 +87,7 @@
 
   const handleEditorCloseButtonKeyDown = (evt) => {
     const isFieldsNotActive = (hashTagsField !== document.activeElement) && (descriptionField !== document.activeElement);
-    if ((isFieldsNotActive) && (window.utils.isEscapeEvent(evt, closeEditForm))) {
+    if (isFieldsNotActive && window.utils.isEscapeEvent(evt, closeEditForm)) {
       evt.preventDefault();
     }
   }
